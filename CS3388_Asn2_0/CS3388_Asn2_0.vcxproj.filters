@@ -24,4 +24,15 @@
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Face.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Normal.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PolygonalMesh.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

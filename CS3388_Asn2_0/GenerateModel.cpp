@@ -17,6 +17,7 @@ This program reads in coordinates for a skeleton of an object and renders the ob
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "PolygonalMesh.h"
 
 using namespace cv;
 using namespace std;
@@ -51,8 +52,8 @@ Mat getRotationMatrix(char axis, double a) {
 
 int main(int argc, char** argv) {
 
-    // create matrix objects
-    vector<Mat> vertices;
+    // create polygonal mesh object;
+    PolygonalMesh p;
 
     ifstream fin("vase.txt");
     string s;
@@ -68,55 +69,43 @@ int main(int argc, char** argv) {
     double angleInc = 1;
     sin2 >> angleInc;
 
-    // original points, which all lie on the same plane
-    vector<Mat> origPointPlane;
-
     //read a line into 's' from 'fin' each time
     for (int i = 0; getline(fin, s); i++) {
         istringstream sin3(s);
         double x, y, z, h;
-        //Vec4d d;
         while (sin3 >> x >> y >> z >> h) {
-            //d = Vec4d(x, y, z, h);
-            vertices.push_back((Mat_<double>(4,1) << x, y, z, h));
+           p.vertices.push_back((Mat_<double>(4,1) << x, y, z, h));
         }
-        //cout << d << endl;
-        cout << origPointPlane.back() << endl;
+        cout << p.vertices.back() << endl;
     }
 
-    //Mat a(getRotationMatrix(axis, angleInc));
-    //Mat b(origPointPlane.at(0));
+    int profileVerticesSize = p.vertices.size();
+    int rotations = 360.0 / angleInc;
 
-    //cout << a << endl;
-    //cout << b << endl;
-
-    //cout << a*b << endl;
-
-    for (double angle = angleInc; angle <= 360.0; angle += angleInc) {
-        vector<Mat> rotPointPlane; // rotated points, which will also lie on the plane
-        Mat rotationMatrix = getRotationMatrix(axis, angle);
-        for (int j = 0; j < origPointPlane.size(); j++) {
-            rotPointPlane.push_back(rotationMatrix * origPointPlane.at(j)); // get the original points
-            cout << rotPointPlane.back() << endl;
+    for (double i = 1; i <= rotations; i++)
+    {
+        Mat rotationMatrix = getRotationMatrix(axis, angleInc * i);
+        for (int j = 0; j < profileVerticesSize; j++)
+        {
+            p.vertices.push_back(rotationMatrix * p.vertices.at(j)); // get the original points
+            cout << p.vertices.back() << endl;
         }
-        points.push_back(rotPointPlane);
     }
 
-    
+    for (int i = 0; i < rotations; i++) {
+        for (int j = 0; j < profileVerticesSize-1; j++) {
+            Point3d a = p.vertices.at(i * rotations     + j);
+            Point3d b = p.vertices.at(i * rotations     + j + 1);
+            Point3d c = p.vertices.at(i * (rotations+1) + j + 1);
 
-    for (int i = 0; i < points.size(); i++) {
+            normalize(a);
 
+            Normal na = (a - b).cross(a - c);
+        }
     }
-
-    
-
-  /*  for (int i = 0; i < points.size(); i++) {
-        cout << getRotationMatrix(axis, angleInc) * points.at(i) << endl;
-    }*/
-
-    getchar();
 
     // chillout until the user has hit a key
+    getchar();
     waitKey();
 
     return 0;

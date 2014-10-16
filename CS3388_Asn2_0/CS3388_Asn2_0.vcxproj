@@ -166,6 +166,11 @@
   <ItemGroup>
     <Text Include="vase.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Face.h" />
+    <ClInclude Include="Normal.h" />
+    <ClInclude Include="PolygonalMesh.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
