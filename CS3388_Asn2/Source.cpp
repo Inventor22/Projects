@@ -45,6 +45,21 @@ int main(int argc, char** argv) {
     u = p.cross(n);
     v = u.cross(n);
 
+    Mat M(3,1,CV_32F);
+    try {
+        hconcat(M, u, M);
+    }
+    catch (cv::Exception e) {
+        cout << e.what() << endl;
+    }
+    hconcat(M, v, M);
+    hconcat(M, n, M);
+    hconcat(M, e, M);
+    M.push_back((Mat_<float>(1, 4) << 0, 0, 0, 1));
+
+    Mat Mv;
+    Mv.push_back( u.t() );
+
     //Matx<float, 3, 1> up3 = up.get_minor<3, 1>(3, 1);
     //Matx<float, 3, 1> N3  = N.get_minor<3, 1>(3, 1);
 
