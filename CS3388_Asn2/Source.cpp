@@ -35,8 +35,6 @@ int main(int argc, char** argv) {
     Matx41f m4(7, 0, 0, 1);
 
     cout << rz * m4 << endl;
-    
-    //m4[0] = Vec4f(1, 2, 3, 4);
 
     Vec4f pp(7, 0, 0, 1);
 
@@ -44,20 +42,12 @@ int main(int argc, char** argv) {
 
     Matx41f cam(15., 15., 10., 1.);
     Matx41f gaze(0., 0., 1., 1.);
-    Mat N(3,1, CV_32F);
-    Vec4f aaaa(4,4,1);
-    Vec3f b;
 
-    vector<Point3f> aa;
-    aa.push_back(Point3f(4, 4, 4));
-    vector<Point2f> bb;
+    Mat aaaa(2, 2, CV_32F);
+    Mat bbbb = aaaa(Rect(0, 0, 2, 1));
 
-    vector<vector<int>> aaa;
-    vector<int> _a = {4, 3, 2, 1};
-    vector<vector<int>> bbb;
+    //Matx31f cam3 = cam(Rect(0, 0, 3, 1));
 
-    Mat m(3, 1, CV_32F);
-    Mat n;
 
 //    vector<Vec4f> v(cam);
     vector<Vec3f> vv;
