@@ -138,11 +138,12 @@ int main(int argc, char** argv) {
         }
     }
     
-    p.printMesh();
+    //p.printMesh();
 
-    ofstream of("PolyVase.txt");
 
-    p.writeToFile(of);
+    p.writeToFile("PolyVase.yml");
+
+    p.readFromFile("PolyVase.yml");
 
     cout << "finished generating Mesh!" << endl;
 

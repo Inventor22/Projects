@@ -3,6 +3,7 @@
 
 class Face {
 public:
+    Face() {}
     Face(int pt1, int pt2, int pt3, int norm) {
         vertices[0] = pt1;
         vertices[1] = pt2;

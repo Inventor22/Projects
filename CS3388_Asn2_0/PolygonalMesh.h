@@ -32,15 +32,36 @@ public:
         }
     }
 
-    void writeToFile(std::ofstream& of) {
-        FileStorage fs("test.yml", FileStorage::WRITE);
+    void writeToFile(std::string s) {
+        cv::FileStorage fs(s, cv::FileStorage::WRITE);
 
-        fs << "frameCount" << 5;
-        time_t rawtime; time(&rawtime);
-        fs << "calibrationDate" << asctime(localtime(&rawtime));
-        Mat cameraMatrix = (Mat_<double>(3, 3) << 1000, 0, 320, 0, 1000, 240, 0, 0, 1);
-        Mat distCoeffs = (Mat_<double>(5, 1) << 0.1, 0.01, -0.001, 0, 0);
-        fs << "cameraMatrix" << cameraMatrix << "distCoeffs" << distCoeffs;
+        fs << "vertices" << "[";
+        for (int i = 0; i < vertsH.size(); ++i) {
+            // Fill each node with data
+            fs << "{:" << "v" << vertsH.at(i) << "}";
+        }
+        fs << "]";
+
+        fs << "faces" << "[";
+        for (int i = 0; i < faces.size(); i++) {
+            Face* f = &faces.at(i);
+            fs << "{:" << "v0" << f->vertices[0] << "v1" << f->vertices[1] << "v2" << f->vertices[2] << "n" << f->normal;
+            fs << "}";
+        }
+        fs << "]";
+
+        fs << "norms" << "[";
+        for (int i = 0; i < norms.size(); i++) {
+            fs << "{:" << "n" << norms.at(i) << "}";
+        }
+        fs << "]";
+
+        //fs <<
+        //    "vertices" << vertsH <<
+        //    "faces" << faces <<
+        //    "norms" << norms;
+
+        fs.release();
 
 
         //of << vertsH.size() << std::endl;
@@ -60,32 +81,75 @@ public:
         //}
     }
 
-    void readFromFile(std::ifstream& is) {
-        int numVerts, numNormsAndFaces;
+    void readFromFile(std::string s) {
+        cv::FileStorage fs2;
+        try {
+            fs2 = cv::FileStorage(s, cv::FileStorage::READ);
+        }
+        catch (cv::Exception e) {
+            std::cout << e.what() << std::endl;
+        }
 
-        string s;
-        getline(is, s);
-        istringstream issVerts(s);
+        cv::FileNode verts = fs2["verts"];
+        cv::FileNodeIterator it = verts.begin(), it_end = verts.end();
+        // iterate through a sequence using FileNodeIterator
+        for (; it != it_end; ++it) {
+            (*it)["v"] >> vertsH;
+        }
 
-        issVerts >> numVerts;
+        cv::FileNode fcs = fs2["faces"];
+        it = fcs.begin(), it_end = fcs.end();
+        // iterate through a sequence using FileNodeIterator
+        for (; it != it_end; ++it) {
+            Face f;
+            (*it)["v0"] >> f.vertices[0];
+            (*it)["v1"] >> f.vertices[1];
+            (*it)["v2"] >> f.vertices[2];
+            (*it)["n"] >> f.normal;
+            faces.push_back(f);
+        }
 
-        for (int i = 0; i < numVerts; i++) {
-            getline(is, s);
-            istringstream iss(s);
-            iss >> cv::Mat;
+        cv::FileNode ns = fs2["faces"];
+        it = ns.begin(), it_end = ns.end();
+        // iterate through a sequence using FileNodeIterator
+        for (; it != it_end; ++it) {
+            Normal n;
+            (*it)["n"] >> n;
+            norms.push_back(n);
         }
 
 
+        //fs2["vertices"] >> vertsH;
+        //fs2["faces"] >> faces;
+        //fs2["norms"] >> norms;
 
-        //read a line into 's' from 'fin' each time
-        for (int i = 0; getline(fin, s); i++) {
-            istringstream sin3(s);
-            double x, y, z, h;
-            while (sin3 >> x >> y >> z >> h) {
-                p.vertsH.push_back((Mat_<float>(4, 1) << x, y, z, h));
-            }
-            cout << p.vertsH.back() << endl;
-        }
+        fs2.release();
+
+        //int numVerts, numNormsAndFaces;
+
+        //string s;
+        //getline(is, s);
+        //istringstream issVerts(s);
+
+        //issVerts >> numVerts;
+
+        //for (int i = 0; i < numVerts; i++) {
+        //    getline(is, s);
+        //    istringstream iss(s);
+        //    iss >> cv::Mat;
+        //}
+
+
+
+        ////read a line into 's' from 'fin' each time
+        //for (int i = 0; getline(fin, s); i++) {
+        //    istringstream sin3(s);
+        //    double x, y, z, h;
+        //    while (sin3 >> x >> y >> z >> h) {
+        //        p.vertsH.push_back((Mat_<float>(4, 1) << x, y, z, h));
+        //    }
+        //    cout << p.vertsH.back() << endl;
+        //}
     }
 
     void printMesh() {
