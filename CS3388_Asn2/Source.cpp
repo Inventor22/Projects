@@ -26,38 +26,32 @@ using namespace std;
 int main(int argc, char** argv) {
 
     float a = 18. / 180 * CV_PI;
-
+    // roation matrix around z axis.
     Matx44f rz(
         cos(a), -sin(a), 0, 0,
         sin(a), cos(a), 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1);
 
-    Vec4f cam(15., 15., 10., 1.);
-    Vec4f gaze(0., 0., 1., 1.);
+    Mat e = (Mat_<float>(3,1) << 15., 15., 10.); // camera vector
+    Mat g = (Mat_<float>(3,1) <<  0.,  0.,  1.); // a point through which the gaze direction unit vector n points to
+    Mat p = (Mat_<float>(3,1) <<  0.,  0.,  1.); // x, y, z, w
 
-    try {
-        // nothing
-    }
-    catch (cv::Exception e) {
-        cout << e.what() << endl;
-    }
+    Mat n;
+    normalize(e - g, n);
+    cout << n << endl;
 
-    Vec4f up(0, 0, 1, 1); // x, y, z, w
-
-    Vec4f N;
-
-    normalize(cam - gaze, N);
-
-    cout << N << endl;
+    Mat u, v;
+    u = p.cross(n);
+    v = u.cross(n);
 
     //Matx<float, 3, 1> up3 = up.get_minor<3, 1>(3, 1);
     //Matx<float, 3, 1> N3  = N.get_minor<3, 1>(3, 1);
 
-    Mat asd(up.get_minor<1, 3>(1, 3));
-    Mat asdf(N.get_minor<1, 3>(1, 3));
+    //Mat asd(up.get_minor<1, 3>(1, 3));
+    //Mat asdf(N.get_minor<1, 3>(1, 3));
 
-    asd.cross(asdf);
+    //asd.cross(asdf);
 
 
 
