@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         while (sin3 >> x >> y >> z >> h) {
            p.vertsH.push_back((Mat_<float>(4,1) << x, y, z, h));
         }
-        cout << p.vertsH.back() << endl;
+        //cout << p.vertsH.back() << endl;
     }
 
     int profileVerticesSize = (int) p.vertsH.size();
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
         for (int j = 0; j < profileVerticesSize; j++)
         {
             p.vertsH.push_back(rotationMatrix * p.vertsH.at(j)); // get the original points
-            cout << p.vertsH.back() << endl;
+            //cout << p.vertsH.back() << endl;
         }
     }
 
@@ -140,10 +140,13 @@ int main(int argc, char** argv) {
     
     //p.printMesh();
 
+    cout << "model generated" << endl;
 
-    p.writeToFile("PolyVase.yml");
+    p.writeToFile("PolyVase.xml");
 
-    p.readFromFile("PolyVase.yml");
+    cout << "finished writing" << endl;
+
+    p.readFromFile("PolyVase.xml");
 
     cout << "finished generating Mesh!" << endl;
 

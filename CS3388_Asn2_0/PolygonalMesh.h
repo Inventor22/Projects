@@ -35,14 +35,14 @@ public:
     void writeToFile(std::string s) {
         cv::FileStorage fs(s, cv::FileStorage::WRITE);
 
-        fs << "vertices" << "[";
+        fs << "vertices" << "[:";
         for (int i = 0; i < vertsH.size(); ++i) {
             // Fill each node with data
             fs << "{:" << "v" << vertsH.at(i) << "}";
         }
         fs << "]";
 
-        fs << "faces" << "[";
+        fs << "faces" << "[:";
         for (int i = 0; i < faces.size(); i++) {
             Face* f = &faces.at(i);
             fs << "{:" << "v0" << f->vertices[0] << "v1" << f->vertices[1] << "v2" << f->vertices[2] << "n" << f->normal;
@@ -50,7 +50,7 @@ public:
         }
         fs << "]";
 
-        fs << "norms" << "[";
+        fs << "norms" << "[:";
         for (int i = 0; i < norms.size(); i++) {
             fs << "{:" << "n" << norms.at(i) << "}";
         }
@@ -90,11 +90,20 @@ public:
             std::cout << e.what() << std::endl;
         }
 
-        cv::FileNode verts = fs2["verts"];
+        for (int i = 0; i < vertsH.size(); i++) {
+            vertsH.pop_back();
+        }
+        for (int i = 0; i < faces.size(); i++) {
+            faces.pop_back();
+            norms.pop_back();
+        }
+
+        cv::FileNode verts = fs2["vertices"];
         cv::FileNodeIterator it = verts.begin(), it_end = verts.end();
         // iterate through a sequence using FileNodeIterator
         for (; it != it_end; ++it) {
             (*it)["v"] >> vertsH;
+            //std::cout << vertsH.back() << std::endl;
         }
 
         cv::FileNode fcs = fs2["faces"];
