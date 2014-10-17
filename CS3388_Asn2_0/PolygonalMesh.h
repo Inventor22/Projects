@@ -17,10 +17,10 @@ class PolygonalMesh {
 public:
     PolygonalMesh() {}
 
-    std::vector<cv::Mat> vertsH;
-    std::vector<cv::Mat> vertsC;
-    std::vector<Face>    faces;
-    std::vector<Normal>  norms;
+    std::vector<cv::Mat> vertsH; // verticies in homogeneous coordinates
+    std::vector<cv::Mat> vertsC; // verticies in cartesian coordinates
+    std::vector<Face>    faces;  // contain 3 point + 1 normal vector indices
+    std::vector<Normal>  norms;  // the cartesian normal
 
     void generateCartesianCoords() {
         try {
@@ -65,7 +65,7 @@ public:
             std::cout << e.what() << std::endl;
         }
 
-        reset();
+        reset(); // clear out any existing poly mesh objects
 
         cv::FileNode verts = fs2["vertices"];
         cv::FileNodeIterator it = verts.begin(), it_end = verts.end();
@@ -93,8 +93,6 @@ public:
         }
 
         fs2.release();
-
-        writeToFile("test.xml");
     }
 
     void printMesh() {
