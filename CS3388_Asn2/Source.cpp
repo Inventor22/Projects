@@ -25,7 +25,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-    float a = 18;
+    float a = 18. / 180 * 3.1415926;
 
     Matx44f rz(cos(a), -sin(a), 0, 0,
                      sin(a), cos(a), 0, 0,
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     
     //m4[0] = Vec4f(1, 2, 3, 4);
 
-    Vec4f pp(7, 0, 1, 1);
+    Vec4f pp(7, 0, 0, 1);
 
     cout << rz * pp << endl;
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     Mat m(3, 1, CV_32F);
     Mat n;
 
-    vector<Vec4f> v(cam);
+//    vector<Vec4f> v(cam);
     vector<Vec3f> vv;
 
     //Mat a(3, 1, CV_32F);
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
         ///convertPointsFromHomogeneous(a,a);
         vector<Vec3f> dd;
         convertPointsFromHomogeneous(Vec4f(4, 3, 2, 1), dd);
-        convertPointsFromHomogeneous(v, vv);
+//        convertPointsFromHomogeneous(v, vv);
         convertPointsFromHomogeneous(N, N);
         convertPointsFromHomogeneous(aaa, bbb);
         convertPointsFromHomogeneous(aa, bb);
