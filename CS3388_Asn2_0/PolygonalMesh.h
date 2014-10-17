@@ -37,16 +37,13 @@ public:
 
         fs << "vertices" << "[:";
         for (int i = 0; i < vertsH.size(); ++i) {
-            // Fill each node with data
             fs << "{:" << "v" << vertsH.at(i) << "}";
         }
         fs << "]";
 
         fs << "faces" << "[:";
         for (int i = 0; i < faces.size(); i++) {
-            Face* f = &faces.at(i);
-            fs << "{:" << "v0" << f->vertices[0] << "v1" << f->vertices[1] << "v2" << f->vertices[2] << "n" << f->normal;
-            fs << "}";
+            fs << "{:" << "f" << faces.at(i).data << "}";
         }
         fs << "]";
 
@@ -56,29 +53,7 @@ public:
         }
         fs << "]";
 
-        //fs <<
-        //    "vertices" << vertsH <<
-        //    "faces" << faces <<
-        //    "norms" << norms;
-
         fs.release();
-
-
-        //of << vertsH.size() << std::endl;
-        //for (int i = 0; i < vertsH.size(); i++) {
-        //    of << vertsH.at(i).t() << std::endl;
-        //}
-        //of << faces.size() << std::endl;
-        //for (int i = 0; i < faces.size(); i++) {
-        //    of <<
-        //        faces.at(i).vertices[0] << " " <<
-        //        faces.at(i).vertices[1] << " " <<
-        //        faces.at(i).vertices[2] << " " <<
-        //        faces.at(i).normal << std::endl;
-        //}
-        //for (int i = 0; i < norms.size(); i++) {
-        //    of << norms.at(i) << std::endl;
-        //}
     }
 
     void readFromFile(std::string s) {
@@ -90,86 +65,55 @@ public:
             std::cout << e.what() << std::endl;
         }
 
-        for (int i = 0; i < vertsH.size(); i++) {
-            vertsH.pop_back();
-        }
-        for (int i = 0; i < faces.size(); i++) {
-            faces.pop_back();
-            norms.pop_back();
-        }
+        reset();
 
         cv::FileNode verts = fs2["vertices"];
         cv::FileNodeIterator it = verts.begin(), it_end = verts.end();
         // iterate through a sequence using FileNodeIterator
         for (; it != it_end; ++it) {
-            (*it)["v"] >> vertsH;
-            //std::cout << vertsH.back() << std::endl;
+            cv::Mat m;
+            (*it)["v"] >> m;
+            vertsH.push_back(m);
         }
 
         cv::FileNode fcs = fs2["faces"];
         it = fcs.begin(), it_end = fcs.end();
-        // iterate through a sequence using FileNodeIterator
         for (; it != it_end; ++it) {
-            Face f;
-            (*it)["v0"] >> f.vertices[0];
-            (*it)["v1"] >> f.vertices[1];
-            (*it)["v2"] >> f.vertices[2];
-            (*it)["n"] >> f.normal;
-            faces.push_back(f);
+            std::vector<int> data;
+            (*it)["f"] >> data;
+            faces.push_back(Face(data));
         }
 
-        cv::FileNode ns = fs2["faces"];
+        cv::FileNode ns = fs2["norms"];
         it = ns.begin(), it_end = ns.end();
-        // iterate through a sequence using FileNodeIterator
         for (; it != it_end; ++it) {
             Normal n;
             (*it)["n"] >> n;
             norms.push_back(n);
         }
 
-
-        //fs2["vertices"] >> vertsH;
-        //fs2["faces"] >> faces;
-        //fs2["norms"] >> norms;
-
         fs2.release();
 
-        //int numVerts, numNormsAndFaces;
-
-        //string s;
-        //getline(is, s);
-        //istringstream issVerts(s);
-
-        //issVerts >> numVerts;
-
-        //for (int i = 0; i < numVerts; i++) {
-        //    getline(is, s);
-        //    istringstream iss(s);
-        //    iss >> cv::Mat;
-        //}
-
-
-
-        ////read a line into 's' from 'fin' each time
-        //for (int i = 0; getline(fin, s); i++) {
-        //    istringstream sin3(s);
-        //    double x, y, z, h;
-        //    while (sin3 >> x >> y >> z >> h) {
-        //        p.vertsH.push_back((Mat_<float>(4, 1) << x, y, z, h));
-        //    }
-        //    cout << p.vertsH.back() << endl;
-        //}
+        writeToFile("test.xml");
     }
 
     void printMesh() {
         for (int i = 0; i < faces.size(); i++) {
             Face f = faces.at(i);
             std::cout << "Face: " << i <<
-                "\nP0: " << vertsH.at(f.vertices[0]) <<
-                "\nP1: " << vertsH.at(f.vertices[1]) <<
-                "\nP2: " << vertsH.at(f.vertices[2]) <<
-                "\nNormal: " << norms.at(f.normal) << std::endl << std::endl;
+                "\nP0: " << vertsH.at(f.data.at(Face::PT0)) <<
+                "\nP1: " << vertsH.at(f.data.at(Face::PT1)) <<
+                "\nP2: " << vertsH.at(f.data.at(Face::PT2)) <<
+                "\nNormal: " << norms.at(f.data.at(Face::NORM)) << std::endl << std::endl;
         }
+    }
+
+private:
+    void reset() {
+        vertsH.clear();
+        vertsC.clear();
+        faces.clear();
+        norms.clear();
     }
 };
 
