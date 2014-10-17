@@ -28,25 +28,27 @@ Mat getRotationMatrix(char axis, double a) {
     a = a / 180 * PI; // convert from degrees to radians
     switch (axis) {
         case 'x':
-            return (Mat_<double>(4, 4) <<
+            return (Mat_<float>(4, 4) <<
                     1., 0., 0., 0.,
                     0., cos(a), -sin(a), 0.,
                     0., sin(a), cos(a), 0.,
                     0., 0., 0., 1.);
             break;
         case 'y':
-            return (Mat_<double>(4, 4) <<
+            return (Mat_<float>(4, 4) <<
                     cos(a), 0, sin(a), 0,
                     0, 1, 0, 0,
                     -sin(a), 0, cos(a), 0,
                     0, 0, 0, 1);
             break;
         case 'z':
-            return (Mat_<double>(4, 4) <<
+            return (Mat_<float>(4, 4) <<
                     cos(a), -sin(a), 0, 0,
                     sin(a), cos(a), 0, 0,
                     0, 0, 1, 0,
                     0, 0, 0, 1);
+        default:
+            return Mat::eye(Size(4, 4), CV_8U);
     }
 }
 
@@ -74,35 +76,75 @@ int main(int argc, char** argv) {
         istringstream sin3(s);
         double x, y, z, h;
         while (sin3 >> x >> y >> z >> h) {
-           p.vertices.push_back((Mat_<double>(4,1) << x, y, z, h));
+           p.vertsH.push_back((Mat_<float>(4,1) << x, y, z, h));
         }
-        cout << p.vertices.back() << endl;
+        cout << p.vertsH.back() << endl;
     }
 
-    int profileVerticesSize = p.vertices.size();
-    int rotations = 360.0 / angleInc;
+    int profileVerticesSize = (int) p.vertsH.size();
+    int rotations = (int) (360.0 / angleInc);
 
-    for (double i = 1; i <= rotations; i++)
+    for (double i = 1; i < rotations; i++)
     {
         Mat rotationMatrix = getRotationMatrix(axis, angleInc * i);
         for (int j = 0; j < profileVerticesSize; j++)
         {
-            p.vertices.push_back(rotationMatrix * p.vertices.at(j)); // get the original points
-            cout << p.vertices.back() << endl;
+            p.vertsH.push_back(rotationMatrix * p.vertsH.at(j)); // get the original points
+            cout << p.vertsH.back() << endl;
         }
     }
 
-    for (int i = 0; i < rotations; i++) {
+
+    // p.generateCartesianCoords();
+
+    /*
+    Generate faces and normals.
+    a a---c
+    |\ \ 2|
+    | \ \ |
+    |1 \ \|
+    b---d d
+    */
+    for (int i = 0; i < rotations-1; i++) {
         for (int j = 0; j < profileVerticesSize-1; j++) {
-            Point3d a = p.vertices.at(i * rotations     + j);
-            Point3d b = p.vertices.at(i * rotations     + j + 1);
-            Point3d c = p.vertices.at(i * (rotations+1) + j + 1);
+            int indexA =  i    * profileVerticesSize + j;
+            int indexB =  i    * profileVerticesSize + j + 1;
+            int indexC = (i+1) * profileVerticesSize + j;
+            int indexD = (i+1) * profileVerticesSize + j + 1;
 
-            normalize(a);
+            Mat ha = p.vertsH.at(indexA);
+            Mat hb = p.vertsH.at(indexB);
+            Mat hc = p.vertsH.at(indexC);
+            Mat hd = p.vertsH.at(indexD);
 
-            Normal na = (a - b).cross(a - c);
+            ha.pop_back();
+            hb.pop_back();
+            hc.pop_back();
+            hd.pop_back();
+
+            Point3f a(ha);
+            Point3f b(hb);
+            Point3f c(hc);
+            Point3f d(hd);
+
+            Normal n1 = (a - b).cross(a - d);
+            Normal n2 = (a - c).cross(a - d);
+
+            p.norms.push_back(n1);
+            p.norms.push_back(n2);
+
+            p.faces.push_back(Face(indexA, indexB, indexD, (int)p.norms.size() - 2)); // face 1
+            p.faces.push_back(Face(indexA, indexD, indexC, (int)p.norms.size() - 1)); // face 2
         }
     }
+    
+    p.printMesh();
+
+    ofstream of("PolyVase.txt");
+
+    p.writeToFile(of);
+
+    cout << "finished generating Mesh!" << endl;
 
     // chillout until the user has hit a key
     getchar();
