@@ -33,9 +33,12 @@ int main(int argc, char** argv) {
         0, 0, 1, 0,
         0, 0, 0, 1);
 
-    Mat e = (Mat_<float>(3,1) << 15., 15., 10.); // camera vector
-    Mat g = (Mat_<float>(3,1) <<  0.,  0.,  1.); // a point through which the gaze direction unit vector n points to
-    Mat p = (Mat_<float>(3,1) <<  0.,  0.,  1.); // x, y, z, w
+    // used as row vectors, so they can be appended to Matrix easily
+    Mat e = (Mat_<float>(1,3) << 15., 15., 10.); // camera vector
+    Mat g = (Mat_<float>(1,3) <<  0.,  0.,  1.); // a point through which the gaze direction unit vector n points to
+    Mat p = (Mat_<float>(1,3) <<  0.,  0.,  1.); // x, y, z, w
+
+    cout << e - g << endl;
 
     Mat n;
     normalize(e - g, n);
@@ -45,17 +48,40 @@ int main(int argc, char** argv) {
     u = p.cross(n);
     v = u.cross(n);
 
-    Mat M(3,1,CV_32F);
+    cout << u << endl;
+    cout << v << endl;
+
+    Mat M(0,3,CV_32F);
+    M.push_back(u);
+    M.push_back(v);
+    M.push_back(n);
+    M.push_back(e);
+    cout << M << endl;
+    M = M.t();
+    cout << M << endl;
     try {
-        hconcat(M, u, M);
+        //M.push_back((Mat_<float>(1, 4) << 0, 0, 0, 1));    // fails
+        //M.push_back(Vec4f(0, 0, 0, 1));                    // fails
+        M.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1)));
     }
     catch (cv::Exception e) {
         cout << e.what() << endl;
     }
-    hconcat(M, v, M);
-    hconcat(M, n, M);
-    hconcat(M, e, M);
-    M.push_back((Mat_<float>(1, 4) << 0, 0, 0, 1));
+
+//    Mat M(1, 3, CV_32F);
+//
+//    try {
+//        hconcat(M, u, M);
+//    }
+//    catch (cv::Exception e) {
+//        cout << e.what() << endl;
+//    }
+//    hconcat(M, v, M);
+//    hconcat(M, n, M);
+//    hconcat(M, e, M);
+////    M.push_back(j);
+//    Mat my = (Mat_<float>(4, 1) << 0, 0, 0, 1);
+//    M.push_back(my);
 
     Mat Mv;
     Mv.push_back( u.t() );
