@@ -25,14 +25,6 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-    float a = 18. / 180 * CV_PI;
-    // roation matrix around z axis.
-    Matx44f rz(
-        cos(a), -sin(a), 0, 0,
-        sin(a), cos(a), 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1);
-
     // used as row vectors, so they can be appended to Matrix easily
     Mat e = (Mat_<float>(1,3) << 15., 15., 10.); // camera vector
     Mat g = (Mat_<float>(1,3) <<  0.,  0.,  1.); // a point through which the gaze direction unit vector n points to
