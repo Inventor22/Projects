@@ -38,68 +38,152 @@ int main(int argc, char** argv) {
     Mat g = (Mat_<float>(1,3) <<  0.,  0.,  1.); // a point through which the gaze direction unit vector n points to
     Mat p = (Mat_<float>(1,3) <<  0.,  0.,  1.); // x, y, z, w
 
-    cout << e - g << endl;
+    cout << "e: " << e << endl;
+    cout << "g: " << e << endl;
+    cout << "p: " << e << endl;
 
     Mat n;
     normalize(e - g, n);
-    cout << n << endl;
+    cout << "n: " << n << endl;
 
     Mat u, v;
     u = p.cross(n);
     v = u.cross(n);
+    //u = n.cross(p);
+    //v = n.cross(u);
+    //u = abs(u);
+    //v = abs(v);
 
-    cout << u << endl;
-    cout << v << endl;
+    cout << "u: " << u << endl;
+    cout << "v: " << v << endl;
 
     Mat M(0,3,CV_32F);
     M.push_back(u);
     M.push_back(v);
     M.push_back(n);
-    M.push_back(e);
-    cout << M << endl;
+    M = M.t();
+    M.push_back(Mat((Mat_<float>(1,3) << -e.dot(u), -e.dot(v), -e.dot(n))));
     M = M.t();
     cout << M << endl;
     try {
         //M.push_back((Mat_<float>(1, 4) << 0, 0, 0, 1));    // fails
         //M.push_back(Vec4f(0, 0, 0, 1));                    // fails
-        M.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1)));
+        M.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1))); // works
     }
     catch (cv::Exception e) {
         cout << e.what() << endl;
     }
 
-//    Mat M(1, 3, CV_32F);
-//
-//    try {
-//        hconcat(M, u, M);
-//    }
-//    catch (cv::Exception e) {
-//        cout << e.what() << endl;
-//    }
-//    hconcat(M, v, M);
-//    hconcat(M, n, M);
-//    hconcat(M, e, M);
-////    M.push_back(j);
-//    Mat my = (Mat_<float>(4, 1) << 0, 0, 0, 1);
-//    M.push_back(my);
+    cout << "M:\n" << M << endl;
 
-    Mat Mv;
-    Mv.push_back( u.t() );
+    Mat Mv = M;
 
-    //Matx<float, 3, 1> up3 = up.get_minor<3, 1>(3, 1);
-    //Matx<float, 3, 1> N3  = N.get_minor<3, 1>(3, 1);
+    cout << "Mv:\n" << Mv << endl;
 
-    //Mat asd(up.get_minor<1, 3>(1, 3));
-    //Mat asdf(N.get_minor<1, 3>(1, 3));
+    float viewingAngle = 60.;
+    float aspectRatio = 1;
+    float N = 5.;
+    float F = 25.;
+    float t = N * tan(CV_PI / 180 * (viewingAngle / 2)); // top
+    float b = -t; // bottom
+    float r = aspectRatio*t; // right
+    float l = -r; // left
 
-    //asd.cross(asdf);
+    printf("N: %f, F: %f, t: %f, b: %f, r: %f, l: %f\n", N, F, t,b,r,l);
+
+    Mat S1T1Mp = (Mat_<float>(4, 4) <<
+                  (2 * N) / (r - l), 0, (r + l) / (r-l), 0,
+                  0, (2 * N) / (t - b), (t + b) / (t-b), 0,
+                  0, 0, -(F + N) / (F - N), -2 * F * N / (F-N),
+                  0, 0, -1, 0
+                  );
+
+    cout << "S1T1Mp:\n" << S1T1Mp << endl;
+
+    int w = 512, h = 512;
+
+    Mat WS2T2 = (Mat_<float>(4, 4) <<
+                 w/2, 0, 0, w/2,
+                 0, -h/2, 0, -h/2+h,
+                 0,0,1,0,
+                 0,0,0,1
+                 );
+
+    cout << "WS2T2:\n" << WS2T2 << endl;
+
+    Mat Pw = (Mat_<float>(4, 1) << 0, 0, 1, 1);
+    Mat Ew = (Mat_<float>(4, 1) << 15,15,10,1);
+    //Mat Pw2 = (Mat_<float>(4, 1) << 5, 5, 5, 1);
+
+    cout << Pw << endl;
+
+    Mat Ps = WS2T2 * (S1T1Mp * (Mv * Pw));
+
+    cout << "Mv*Pw:\n" << Mv*Pw << endl;
+    cout << "(S1T1Mp * (Mv * Pw):\n" << S1T1Mp * (Mv * Pw) << endl;
+
+    cout << "Ps:\n" << Ps << endl;
+
+    Mat Mp = (Mat_<float>(4, 4) <<
+              N, 0, 0, 0,
+              0, N, 0, 0,
+              0, 0, -1.0*(F+N)/(F-N), -2.0*(F*N)/(F-N),
+              0, 0, -1, 0);
+
+    Mat Pv = Mp * (Mv * Pw);
+
+    cout << "Gaze point in cam coords:\n" << Mv * Pw << endl;
+    cout << "center of proj cam coords:\n" << Mv * Ew << endl;
+    cout << "The gaze point after persp. trans.:\n" << Pv << endl;
+    
+    //float persp = Pv.at<float>(3, 0);
+    //Pv.at<float>(0, 0) /= persp;
+    //Pv.at<float>(1, 0) /= persp;
+    //Pv.at<float>(2, 0) /= persp;
+    //Pv.at<float>(3, 0) /= persp;
+
+    Pv /= Pv.at<float>(3, 0);
+
+    cout << "The gaze point after persp, proj. is:\n" << Pv << endl;
+
+    cout << "Mp:\n" << Mp << endl;
+    cout << "Mv:\n" << Mv << endl;
+    cout << "Pw:\n" << Pw << endl;
+
+    Mat tr = (Mat_<float>(4, 1) <<
+              t, r, -N, 1.0
+              );
 
 
+    printf("\n Before perspective transformation, top right corner of near plane is:\n");
+    cout << tr << endl;
+
+    printf("\n After perspective transformation, the top right corner of the near plane is:\n");
+    cout << S1T1Mp * tr << endl;
+
+    tr = S1T1Mp * tr;
+
+    printf("\n After perspective division, the top right corner of the near plane is:\n");
+
+    //persp = tr.at<float>(3, 0);
+    //tr.at<float>(0, 0) /= persp;
+    //tr.at<float>(1, 0) /= persp;
+    //tr.at<float>(2, 0) /= persp;
+    //tr.at<float>(3, 0) /= persp;
+
+    tr /= tr.at<float>(3, 0);
+
+    cout << tr << endl;
+
+    printf("\n Top right corner of near plane in pixel coordinates is\n");
+
+    cout << WS2T2 * tr << endl;
 
     //PolygonalMesh p;
     //p.readFromFile("PolyMesh.xml");
 
 
     // chillout until the user has hit a key
+    getchar();
     waitKey();
 }
