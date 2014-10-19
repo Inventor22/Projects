@@ -50,19 +50,18 @@ int main(int argc, char** argv) {
     vv = uu.cross(nn);
 
     int64 t0 = getTickCount();
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 100000; i++) {
         Mat Mvv = uu;
         hconcat(Mvv, vv, Mvv);
         hconcat(Mvv, nn, Mvv);
         Mvv.push_back(Mat((Mat_<float>(1, 3) << -ee.dot(uu), -ee.dot(vv), -ee.dot(nn))));
         Mvv = Mvv.t();
         Mvv.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1))); // works
-        cout << Mvv << endl;
     }
     cout << "Time hconcat: " << (getTickCount() - t0)/cvGetTickFrequency() << endl;
 
     t0 = getTickCount();
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 100000; i++) {
         Mat Mv(0, 3, CV_32F);
         Mv.push_back(u);
         Mv.push_back(v);
@@ -71,7 +70,6 @@ int main(int argc, char** argv) {
         Mv.push_back(Mat((Mat_<float>(1, 3) << -e.dot(u), -e.dot(v), -e.dot(n))));
         Mv = Mv.t();
         Mv.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1))); // works
-        cout << Mv << endl;
     }
     cout << "Time transform: " << (getTickCount() - t0)/cvGetTickFrequency() << endl;
 
