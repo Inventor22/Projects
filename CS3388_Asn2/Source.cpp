@@ -4,7 +4,7 @@ ID:   250575030
 Date: 13/10/14
 
 Description:
-This program reads in coordinates for a skeleton of an object and renders the object.
+This program reads in a wiremesh of an object and renders the object.
 
 */
 #include "opencv2/core/core.hpp"
@@ -179,9 +179,21 @@ int main(int argc, char** argv) {
 
     cout << WS2T2 * tr << endl;
 
+    Mat tt = (Mat_<float>(4, 1) <<
+              t, r, -N, 1.0
+              );
+
+    int64 t0 = getTickCount();
+    for (int i = 0; i < 1000000; i++) {
+        tt = (WS2T2 * ((S1T1Mp * tt)));
+    }
+    cout << "time: " << (getTickCount() - t0)/getTickFrequency() << endl;
+
+    cout << tt << endl;
+    cout << tt/tt.at<float>(3, 0) << endl;
+
     //PolygonalMesh p;
     //p.readFromFile("PolyMesh.xml");
-
 
     // chillout until the user has hit a key
     getchar();
