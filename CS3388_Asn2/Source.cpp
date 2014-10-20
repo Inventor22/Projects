@@ -26,8 +26,8 @@ using namespace std;
 int main(int argc, char** argv) {
 
     // used as row vectors, so they can be appended to Matrix easily
-    Mat e = (Mat_<float>(1,3) << 15., 15., 10.); // camera vector
-    Mat g = (Mat_<float>(1,3) <<  0.,  0.,  1.); // a point through which the gaze direction unit vector n points to
+    Mat e = (Mat_<float>(1,3) << 30., 30., 10.); // camera vector.  15, 15, 10
+    Mat g = (Mat_<float>(1,3) <<  0.,  0.,  18.); // a point through which the gaze direction unit vector n points to
     Mat p = (Mat_<float>(1,3) <<  0.,  0.,  1.); // x, y, z, w
 
     Mat n;
@@ -39,44 +39,19 @@ int main(int argc, char** argv) {
     //u = abs(u);
     //v = abs(v);
 
-    Mat ee = (Mat_<float>(3, 1) << 15., 15., 10.); // camera vector
-    Mat gg = (Mat_<float>(3, 1) <<  0., 0., 1.); // a point through which the gaze direction unit vector n points to
-    Mat pp = (Mat_<float>(3, 1) <<  0., 0., 1.); // x, y, z, w
-
-    Mat nn;
-    normalize(ee-gg, nn);
-    Mat uu, vv;
-    uu = pp.cross(nn);
-    vv = uu.cross(nn);
-
-    int64 t0 = getTickCount();
-    for (int i = 0; i < 100000; i++) {
-        Mat Mvv = uu;
-        hconcat(Mvv, vv, Mvv);
-        hconcat(Mvv, nn, Mvv);
-        Mvv.push_back(Mat((Mat_<float>(1, 3) << -ee.dot(uu), -ee.dot(vv), -ee.dot(nn))));
-        Mvv = Mvv.t();
-        Mvv.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1))); // works
-    }
-    cout << "Time hconcat: " << (getTickCount() - t0)/cvGetTickFrequency() << endl;
-
-    t0 = getTickCount();
-    for (int i = 0; i < 100000; i++) {
-        Mat Mv(0, 3, CV_32F);
-        Mv.push_back(u);
-        Mv.push_back(v);
-        Mv.push_back(n);
-        Mv = Mv.t();
-        Mv.push_back(Mat((Mat_<float>(1, 3) << -e.dot(u), -e.dot(v), -e.dot(n))));
-        Mv = Mv.t();
-        Mv.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1))); // works
-    }
-    cout << "Time transform: " << (getTickCount() - t0)/cvGetTickFrequency() << endl;
+    Mat Mv(0, 3, CV_32F);
+    Mv.push_back(u);
+    Mv.push_back(v);
+    Mv.push_back(n);
+    Mv = Mv.t();
+    Mv.push_back(Mat((Mat_<float>(1, 3) << -e.dot(u), -e.dot(v), -e.dot(n))));
+    Mv = Mv.t();
+    Mv.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1))); // works
 
     float viewingAngle = 60.;
     float aspectRatio = 1;
     float N = 5.;
-    float F = 25.;
+    float F = 30.;
     float t = N * tan(CV_PI / 180 * (viewingAngle / 2)); // top
     float b = -t; // bottom
     float r = aspectRatio*t; // right
@@ -98,17 +73,92 @@ int main(int argc, char** argv) {
                  0,   0,   0,  1
                  );
 
+    // take point in world coords and transform to screen coords
     Mat tt = (Mat_<float>(4, 1) << t, r, -N, 1.0);
+    Mat tf = (Mat_<float>(4, 1) << t, r, N, 1.0);
 
     tt = WS2T2 * (S1T1Mp * tt);
 
     cout << tt << endl;
     cout << tt/tt.at<float>(3, 0) << endl;
 
-    //PolygonalMesh p;
-    //p.readFromFile("PolyMesh.xml");
+    Mat screen(512, 512, CV_8U);
+    screen.setTo(Scalar(255, 255, 255));
+
+    PolygonalMesh poly;
+    poly.readFromFile("PolyVase.xml");
+
+    namedWindow("s", CV_WINDOW_AUTOSIZE);
+    imshow("s", screen);
+
+    vector<Point2i> coords;
+    coords.reserve(poly.vertsH.size());
+    for (int i = 0; i < poly.vertsH.size(); i++) {
+        Mat pt = WS2T2 * (S1T1Mp * (Mv * poly.vertsH[i]));
+        pt /= pt.at<float>(3, 0);
+        coords.push_back(Point2f((int)pt.at<float>(0), (int)pt.at<float>(1)));
+        cout << coords.back() << endl;
+        screen.at<uchar>(coords.back()) = 0;
+    }
+    Mat nnn = e-g;
+    Normal nn = Point3f(nnn.at<float>(0), nnn.at<float>(1), nnn.at<float>(2));
+    for (int i = 0; i < poly.faces.size(); i++) {
+        Normal faceNormal = poly.norms[poly.faces[i].data[3]];
+        float b = faceNormal.dot(nn);
+        //cout << a << endl;
+        //cout << b << endl;
+        if (b < 0) {
+            line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[1]], Scalar(0, 0, 0));
+            line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[2]], Scalar(0, 0, 0));
+            line(screen, coords[poly.faces[i].data[1]], coords[poly.faces[i].data[2]], Scalar(0, 0, 0));
+        }
+    }
+
+    //int c = 0;
+    ////for (int i = 0; i < poly.vertsH.size(); i++) {
+    //for (int i = 0; i < 27; i++) {
+    //    cout << "Pt orig:\n" << poly.vertsH[i] << endl;
+    //    cout << poly.vertsH[i].at<float>(0) << endl;
+    //    cout << poly.vertsH[i].at<float>(1) << endl;
+    //    cout << poly.vertsH[i].at<float>(2) << endl;
+    //    cout << poly.vertsH[i].at<float>(3) << endl;
+
+    //    Mat pt = poly.vertsH[i];
+    //    //pt.at<float>(2) *= -1;
+
+    //    cout << "Pt (-)(2):\n" << pt << endl;
+
+    //    pt = WS2T2 * (S1T1Mp * (Mv * pt));
+
+    //    //Mat pt = WS2T2 * (S1T1Mp * poly.vertsH[i]);
+
+    //    cout << "Pt Trans:\n" << pt << endl;
+
+    //    pt /= pt.at<float>(3, 0);
+
+    //    cout << "Pt/(3,0):\n" << pt << endl;
+
+    //    cout << pt.at<float>(0) << endl;
+    //    cout << pt.at<float>(1) << endl;
+
+    //    if (pt.at<float>(1) < 512 &&
+    //        pt.at<float>(1) >= 0 &&
+    //        pt.at<float>(0) < 512 &&
+    //        pt.at<float>(0) >= 0) {
+    //        cout << pt << endl;
+    //        cout << pt.at<float>(0) << endl;
+    //        cout << pt.at<float>(1) << endl;
+    //        screen.at<uchar>((int)pt.at<float>(1), (int)pt.at<float>(0)) = 0;
+
+    //    } else {
+    //        c++;
+    //    }
+    //}
+    //cout << "non fitting: " << c << endl;
+
+    imshow("s", screen);
 
     // chillout until the user has hit a key
-    getchar();
     waitKey();
+    getchar();
 }

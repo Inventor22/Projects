@@ -94,7 +94,6 @@ int main(int argc, char** argv) {
         }
     }
 
-
     // p.generateCartesianCoords();
 
     /*
@@ -105,12 +104,12 @@ int main(int argc, char** argv) {
     |1 \ \|
     b---d d
     */
-    for (int i = 0; i < rotations-1; i++) {
+    for (int i = 0; i < rotations; i++) {
         for (int j = 0; j < profileVerticesSize-1; j++) {
             int indexA =  i    * profileVerticesSize + j;
             int indexB =  i    * profileVerticesSize + j + 1;
-            int indexC = (i+1) * profileVerticesSize + j;
-            int indexD = (i+1) * profileVerticesSize + j + 1;
+            int indexC = ((i+1)%(rotations)) * profileVerticesSize + j;
+            int indexD = ((i+1)%(rotations)) * profileVerticesSize + j + 1;
 
             Mat ha = p.vertsH.at(indexA);
             Mat hb = p.vertsH.at(indexB);
