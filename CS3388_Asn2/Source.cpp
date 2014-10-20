@@ -26,7 +26,7 @@ using namespace std;
 int main(int argc, char** argv) {
 
     // used as row vectors, so they can be appended to Matrix easily
-    Mat e = (Mat_<float>(1,3) << 30., 30., 10.); // camera vector.  15, 15, 10
+    Mat e = (Mat_<float>(1,3) << 30., 30., 20.); // camera vector.  15, 15, 10
     Mat g = (Mat_<float>(1,3) <<  0.,  0.,  18.); // a point through which the gaze direction unit vector n points to
     Mat p = (Mat_<float>(1,3) <<  0.,  0.,  1.); // x, y, z, w
 
@@ -97,14 +97,30 @@ int main(int argc, char** argv) {
         Mat pt = WS2T2 * (S1T1Mp * (Mv * poly.vertsH[i]));
         pt /= pt.at<float>(3, 0);
         coords.push_back(Point2f((int)pt.at<float>(0), (int)pt.at<float>(1)));
-        cout << coords.back() << endl;
-        screen.at<uchar>(coords.back()) = 0;
+        //cout << coords.back() << endl;
+        //screen.at<uchar>(coords.back()) = 0;
     }
-    Mat nnn = e-g;
-    Normal nn = Point3f(nnn.at<float>(0), nnn.at<float>(1), nnn.at<float>(2));
+
+    for (int i = 0; i < poly.norms.size(); i++) {
+        Normal nor = poly.norms[i];
+        Mat n4 = (Mat_<float>(4, 1) << nor.x, nor.y, nor.z, 0);
+        n4 = WS2T2 * (S1T1Mp * (Mv * n4));
+        n4 /= n4.at<float>(3);
+        //cout << n4 << endl;
+        poly.norms[i] = Normal(n4.at<float>(0), n4.at<float>(1), n4.at<float>(2));
+    }
+
     for (int i = 0; i < poly.faces.size(); i++) {
         Normal faceNormal = poly.norms[poly.faces[i].data[3]];
-        float b = faceNormal.dot(nn);
+        Mat tv = poly.vertsH[ poly.faces[i].data[0] ]; //  triangle 1st vertex
+        Vec3f  camToTri(tv.at<float>(0) - e.at<float>(0),
+                        tv.at<float>(1) - e.at<float>(1),
+                        tv.at<float>(2) - e.at<float>(2));
+        //cout << "fn:\n" << faceNormal << endl;
+        //cout << "tv:\n" << tv << endl;
+        //cout << "t:\n" << t << endl;
+        float b = camToTri.dot(faceNormal);
+        // faceNormal.dot(nn);
         //cout << a << endl;
         //cout << b << endl;
         if (b < 0) {

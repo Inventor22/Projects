@@ -126,8 +126,13 @@ int main(int argc, char** argv) {
             Point3f c(hc);
             Point3f d(hd);
 
-            Normal n1 = (a - b).cross(a - d);
-            Normal n2 = (a - c).cross(a - d);
+            // (p2-p1)x(p3-p2)
+            // a = p1, b = p2, d = p3
+            // a = p1, d = p2, c = p3
+            //Normal n1 = (a - b).cross(a - d);
+            //Normal n2 = (a - c).cross(a - d);
+            Normal n1 = (b - a).cross(d - b);
+            Normal n2 = (d - a).cross(c - d);
 
             p.norms.push_back(n1);
             p.norms.push_back(n2);
