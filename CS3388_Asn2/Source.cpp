@@ -163,18 +163,18 @@ int main(int argc, char** argv) {
             // faceNormal.dot(nn);
             //cout << a << endl;
             //cout << b << endl;
+            if (rainbow) {
+                Vec3b clr = hsv.at<Vec3b>(0, 0);
+                clr[0]++;
+                hsv.at<Vec3b>(0, 0) = clr;
+                cvtColor(hsv, bgr, CV_HSV2BGR);
+                Vec3b bgr3 = bgr.at<Vec3b>(0, 0);
 
+                lineColour = Scalar(bgr3[0], bgr3[1], bgr3[2]);
+            }
             if (b >= 0) {
                 //lineColour = Scalar(rand.uniform(0, 255), rand.uniform(0, 255), rand.uniform(0, 255));
-                if (rainbow) {
-                    Vec3b clr = hsv.at<Vec3b>(0, 0);
-                    clr[0]++;
-                    hsv.at<Vec3b>(0, 0) = clr;
-                    cvtColor(hsv, bgr, CV_HSV2BGR);
-                    Vec3b bgr3 = bgr.at<Vec3b>(0, 0);
 
-                    lineColour = Scalar(bgr3[0], bgr3[1], bgr3[2]);
-                }
 
                 line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[1]], lineColour);
                 line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[2]], lineColour);
