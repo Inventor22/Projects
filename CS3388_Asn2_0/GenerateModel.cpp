@@ -131,6 +131,8 @@ int main(int argc, char** argv) {
             // a = p1, d = p2, c = p3
             //Normal n1 = (a - b).cross(a - d);
             //Normal n2 = (a - c).cross(a - d);
+            //Normal n1 = (b - a).cross(d - a);
+            //Normal n2 = (c-a).cross(d-a);
             Normal n1 = (b - a).cross(d - b);
             Normal n2 = (d - a).cross(c - d);
 

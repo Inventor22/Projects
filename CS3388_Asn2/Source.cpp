@@ -26,7 +26,7 @@ using namespace std;
 int main(int argc, char** argv) {
 
     // used as row vectors, so they can be appended to Matrix easily
-    Mat e = (Mat_<float>(1,3) << 30., 30., 20.); // camera vector.  15, 15, 10
+    Mat e = (Mat_<float>(1,3) << 30., 30., 15.); // camera vector.  15, 15, 10
     Mat g = (Mat_<float>(1,3) <<  0.,  0.,  18.); // a point through which the gaze direction unit vector n points to
     Mat p = (Mat_<float>(1,3) <<  0.,  0.,  1.); // x, y, z, w
 
@@ -66,9 +66,11 @@ int main(int argc, char** argv) {
                   0,           0,          -1,           0
                   );
 
+    int flip = 1;
+
     Mat WS2T2 = (Mat_<float>(4, 4) <<
                  w/2, 0,   0,  w/2,
-                 0,  -h/2, 0, -h/2+h,
+                 0,  flip*h/2, 0, -h/2+h,
                  0,   0,   1,  0,
                  0,   0,   0,  1
                  );
@@ -101,14 +103,14 @@ int main(int argc, char** argv) {
         //screen.at<uchar>(coords.back()) = 0;
     }
 
-    for (int i = 0; i < poly.norms.size(); i++) {
-        Normal nor = poly.norms[i];
-        Mat n4 = (Mat_<float>(4, 1) << nor.x, nor.y, nor.z, 0);
-        n4 = WS2T2 * (S1T1Mp * (Mv * n4));
-        n4 /= n4.at<float>(3);
-        //cout << n4 << endl;
-        poly.norms[i] = Normal(n4.at<float>(0), n4.at<float>(1), n4.at<float>(2));
-    }
+    //for (int i = 0; i < poly.norms.size(); i++) {
+    //    Normal nor = poly.norms[i];
+    //    Mat n4 = (Mat_<float>(4, 1) << nor.x, nor.y, nor.z, 0);
+    //    n4 = WS2T2 * (S1T1Mp * (Mv * n4));
+    //    n4 /= n4.at<float>(3);
+    //    //cout << n4 << endl;
+    //    poly.norms[i] = Normal(n4.at<float>(0), n4.at<float>(1), n4.at<float>(2));
+    //}
 
     for (int i = 0; i < poly.faces.size(); i++) {
         Normal faceNormal = poly.norms[poly.faces[i].data[3]];
@@ -119,58 +121,16 @@ int main(int argc, char** argv) {
         //cout << "fn:\n" << faceNormal << endl;
         //cout << "tv:\n" << tv << endl;
         //cout << "t:\n" << t << endl;
-        float b = camToTri.dot(faceNormal);
+        float b = faceNormal.dot(camToTri); // camToTri.dot(faceNormal);
         // faceNormal.dot(nn);
         //cout << a << endl;
         //cout << b << endl;
-        if (b < 0) {
+        if (b >= 0) {
             line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[1]], Scalar(0, 0, 0));
             line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[2]], Scalar(0, 0, 0));
             line(screen, coords[poly.faces[i].data[1]], coords[poly.faces[i].data[2]], Scalar(0, 0, 0));
         }
     }
-
-    //int c = 0;
-    ////for (int i = 0; i < poly.vertsH.size(); i++) {
-    //for (int i = 0; i < 27; i++) {
-    //    cout << "Pt orig:\n" << poly.vertsH[i] << endl;
-    //    cout << poly.vertsH[i].at<float>(0) << endl;
-    //    cout << poly.vertsH[i].at<float>(1) << endl;
-    //    cout << poly.vertsH[i].at<float>(2) << endl;
-    //    cout << poly.vertsH[i].at<float>(3) << endl;
-
-    //    Mat pt = poly.vertsH[i];
-    //    //pt.at<float>(2) *= -1;
-
-    //    cout << "Pt (-)(2):\n" << pt << endl;
-
-    //    pt = WS2T2 * (S1T1Mp * (Mv * pt));
-
-    //    //Mat pt = WS2T2 * (S1T1Mp * poly.vertsH[i]);
-
-    //    cout << "Pt Trans:\n" << pt << endl;
-
-    //    pt /= pt.at<float>(3, 0);
-
-    //    cout << "Pt/(3,0):\n" << pt << endl;
-
-    //    cout << pt.at<float>(0) << endl;
-    //    cout << pt.at<float>(1) << endl;
-
-    //    if (pt.at<float>(1) < 512 &&
-    //        pt.at<float>(1) >= 0 &&
-    //        pt.at<float>(0) < 512 &&
-    //        pt.at<float>(0) >= 0) {
-    //        cout << pt << endl;
-    //        cout << pt.at<float>(0) << endl;
-    //        cout << pt.at<float>(1) << endl;
-    //        screen.at<uchar>((int)pt.at<float>(1), (int)pt.at<float>(0)) = 0;
-
-    //    } else {
-    //        c++;
-    //    }
-    //}
-    //cout << "non fitting: " << c << endl;
 
     imshow("s", screen);
 
