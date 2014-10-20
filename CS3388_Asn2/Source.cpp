@@ -23,7 +23,23 @@ This program reads in a wiremesh of an object and renders the object.
 using namespace cv;
 using namespace std;
 
+static const char* wndName = "Le Fancy Vase";
+
 int main(int argc, char** argv) {
+
+    cout << "Welcome to Le Fancy Vase Drawer.\n" << endl;
+    printf("Instructions:\n"\
+           "r,g,b - Change colour of mesh to red, green, blue\n"\
+           "k     - Colour the mesh black\n"\
+           "p     - RAINBOW.\n"\
+           "1,3   - Zoom in, zoom out\n"\
+           "w,s   - Move camera up, down\n"\
+           "a,d   - Rotate camera left, right\n"\
+           "q,e   - Move gaze point up, down\n"\
+           "z,c   - Move camera and gaze point up, down\n"\
+           "\nPress <Enter> to begin.");
+
+    getchar();
 
     float viewingAngle = 60.;
     float aspectRatio = 1;
@@ -39,12 +55,10 @@ int main(int argc, char** argv) {
     bool camChanged = true;
     bool rainbow = true;
 
-    namedWindow("s", CV_WINDOW_AUTOSIZE);
-
-    RNG rand(0xFFFFFF);
+    namedWindow(wndName, CV_WINDOW_AUTOSIZE);
 
     // used as row vectors, so they can be appended to Matrix easily
-    Mat e = (Mat_<float>(1, 3) << 30., 30., 15.); // camera vector.  15, 15, 10
+    Mat e = (Mat_<float>(1, 3) << 30., 30., 22.); // camera vector.  15, 15, 10
     Mat g = (Mat_<float>(1, 3) <<  0., 0., 18.); // a point through which the gaze direction unit vector n points to
     Mat p = (Mat_<float>(1, 3) <<  0., 0., 1.); // x, y, z, w
     Mat n, u, v;
@@ -114,9 +128,7 @@ int main(int argc, char** argv) {
 
             camChanged = false;
         }
-
-        
-
+           
         vector<Point2i> coords;
         coords.reserve(poly.vertsH.size());
         for (int i = 0; i < poly.vertsH.size(); i++) {
@@ -128,11 +140,13 @@ int main(int argc, char** argv) {
         //for (int i = 0; i < poly.norms.size(); i++) {
         //    Normal nor = poly.norms[i];
         //    Mat n4 = (Mat_<float>(4, 1) << nor.x, nor.y, nor.z, 0);
-        //    n4 = WS2T2 * (S1T1Mp * (Mv * n4));
+        //    n4 = Mv * n4;
+        //    //n4 = WS2T2 * (S1T1Mp * (Mv * n4));
         //    n4 /= n4.at<float>(3);
         //    //cout << n4 << endl;
         //    poly.norms[i] = Normal(n4.at<float>(0), n4.at<float>(1), n4.at<float>(2));
         //}
+
         if (rainbow) {
             hsv = Mat(Size(1, 1), CV_8UC3, Scalar(10, sat, val));
         }
@@ -156,9 +170,7 @@ int main(int argc, char** argv) {
                     Vec3b clr = hsv.at<Vec3b>(0, 0);
                     clr[0]++;
                     hsv.at<Vec3b>(0, 0) = clr;
-
                     cvtColor(hsv, bgr, CV_HSV2BGR);
-
                     Vec3b bgr3 = bgr.at<Vec3b>(0, 0);
 
                     lineColour = Scalar(bgr3[0], bgr3[1], bgr3[2]);
@@ -170,7 +182,7 @@ int main(int argc, char** argv) {
             }
         }
 
-        imshow("s", screen);
+        imshow(wndName, screen);
 
         cout << (getTickCount() - t0)/cvGetTickFrequency() << endl;
 
@@ -214,6 +226,14 @@ int main(int argc, char** argv) {
             case 'z':
                 g.at<float>(2) -= 1;
                 e.at<float>(2) -= 1;
+                camChanged = true;
+                break;
+            case '1':
+                e *= 0.9;
+                camChanged = true;
+                break;
+            case '3':
+                e *= 1.1;
                 camChanged = true;
                 break;
             case 'r':
