@@ -20,8 +20,9 @@ public:
     std::vector<cv::Mat> vertsH; // verticies in homogeneous coordinates
     std::vector<cv::Mat> vertsC; // verticies in cartesian coordinates
     std::vector<Face>    faces;  // contain 3 point + 1 normal vector indices
-    std::vector<Normal>  norms;  // the cartesian normal
+    std::vector<Normal>  norms;  // the normal
 
+    // not working
     void generateCartesianCoords() {
         try {
             // failing right now. http://stackoverflow.com/questions/23290000/assertion-failed-convertpointsfromhomogenous 
@@ -95,6 +96,7 @@ public:
         fs2.release();
     }
 
+    // never removed
     void printMesh() {
         for (int i = 0; i < faces.size(); i++) {
             Face f = faces.at(i);
@@ -107,6 +109,7 @@ public:
     }
 
 private:
+    // clears all vectors
     void reset() {
         vertsH.clear();
         vertsC.clear();

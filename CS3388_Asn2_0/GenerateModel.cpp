@@ -22,10 +22,8 @@ This program reads in coordinates for a skeleton of an object and renders the ob
 using namespace cv;
 using namespace std;
 
-#define PI 3.14159265358979323846264338327950
-
 Mat getRotationMatrix(char axis, double a) {
-    a = a / 180 * PI; // convert from degrees to radians
+    a = a / 180 * CV_PI; // convert from degrees to radians
     switch (axis) {
         case 'x':
             return (Mat_<float>(4, 4) <<
@@ -57,44 +55,43 @@ int main(int argc, char** argv) {
     // create polygonal mesh object;
     PolygonalMesh p;
 
+    // open profile points file
     ifstream fin("vase.txt");
     string s;
 
+    // read in rotation axis
     getline(fin, s);
     istringstream sin(s);
-
     char axis;
     sin >> axis;
 
+    // read angle increment
     getline(fin, s);
     istringstream sin2(s);
     double angleInc = 1;
     sin2 >> angleInc;
 
-    //read a line into 's' from 'fin' each time
+    //read a line into 's' from 'fin' until EOF and store vertices
     for (int i = 0; getline(fin, s); i++) {
         istringstream sin3(s);
         double x, y, z, h;
         while (sin3 >> x >> y >> z >> h) {
            p.vertsH.push_back((Mat_<float>(4,1) << x, y, z, h));
         }
-        //cout << p.vertsH.back() << endl;
     }
 
     int profileVerticesSize = (int) p.vertsH.size();
+
     int rotations = (int) (360.0 / angleInc);
 
-    for (double i = 1; i < rotations; i++)
-    {
+    for (double i = 1; i < rotations; i++) {
+        // generate rotation matrix according to angle
         Mat rotationMatrix = getRotationMatrix(axis, angleInc * i);
-        for (int j = 0; j < profileVerticesSize; j++)
-        {
-            p.vertsH.push_back(rotationMatrix * p.vertsH.at(j)); // get the original points
-            //cout << p.vertsH.back() << endl;
+        for (int j = 0; j < profileVerticesSize; j++) {
+            // rotate original points according to rotation matrix
+            p.vertsH.push_back(rotationMatrix * p.vertsH.at(j));
         }
     }
-
-    // p.generateCartesianCoords();
 
     /*
     Generate faces and normals.
@@ -106,21 +103,25 @@ int main(int argc, char** argv) {
     */
     for (int i = 0; i < rotations; i++) {
         for (int j = 0; j < profileVerticesSize-1; j++) {
-            int indexA =  i    * profileVerticesSize + j;
-            int indexB =  i    * profileVerticesSize + j + 1;
+            // retrieve indices of coords, according to diagram above
+            int indexA =   i                 * profileVerticesSize + j;
+            int indexB =   i                 * profileVerticesSize + j + 1;
             int indexC = ((i+1)%(rotations)) * profileVerticesSize + j;
             int indexD = ((i+1)%(rotations)) * profileVerticesSize + j + 1;
 
+            // retrieve homogeneous vertices
             Mat ha = p.vertsH.at(indexA);
             Mat hb = p.vertsH.at(indexB);
             Mat hc = p.vertsH.at(indexC);
             Mat hd = p.vertsH.at(indexD);
 
+            // remove homogeneous point (last point), to make 3-vector
             ha.pop_back();
             hb.pop_back();
             hc.pop_back();
             hd.pop_back();
 
+            // store as 3d points with float precision
             Point3f a(ha);
             Point3f b(hb);
             Point3f c(hc);
@@ -133,9 +134,11 @@ int main(int argc, char** argv) {
             //Normal n2 = (a - c).cross(a - d);
             //Normal n1 = (b - a).cross(d - a);
             //Normal n2 = (c-a).cross(d-a);
+            // compute normals 
             Normal n1 = (b - a).cross(d - b);
             Normal n2 = (d - a).cross(c - d);
 
+            // store normals and faces
             p.norms.push_back(n1);
             p.norms.push_back(n2);
 
@@ -143,18 +146,15 @@ int main(int argc, char** argv) {
             p.faces.push_back(Face(indexA, indexD, indexC, (int)p.norms.size() - 1)); // face 2
         }
     }
-    
-    //p.printMesh();
 
-    cout << "model generated" << endl;
+    cout << "Model generated" << endl;
 
-    p.writeToFile("PolyVase.xml");
+    string fileName = "PolyVase.xml";
 
-    cout << "finished writing" << endl;
+    p.writeToFile(fileName);
 
-    p.readFromFile("PolyVase.xml");
-
-    cout << "finished generating Mesh!" << endl;
+    cout << "Model written to file: " << fileName << endl;
+    cout << "Press <Enter> to exit" << endl;
 
     // chillout until the user has hit a key
     getchar();

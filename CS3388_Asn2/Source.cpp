@@ -4,8 +4,7 @@ ID:   250575030
 Date: 13/10/14
 
 Description:
-This program reads in a wiremesh of an object and renders the object.
-
+This program reads a wiremesh from file and renders it
 */
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -25,6 +24,21 @@ using namespace std;
 
 static const char* wndName = "Le Fancy Vase";
 
+enum { X=0, Y, Z, W }; // array indices for point/vector components
+
+Mat getRotationMatrix(Vec3f v, float angle) {
+    angle = angle/180*CV_PI;
+    Mat Jv = (Mat_<float>(3, 3) <<
+                0, -v[Z], v[Y],
+              v[Z],   0, -v[X],
+             -v[Y], v[X],   0);
+    Mat r;
+    add(Mat::eye(3, 3, CV_32F), sin(angle)*Jv, r);
+    //pow(Jv, 2, Jv);
+    add(r , (1.0-cos(angle))*(Jv*Jv), r);
+    return r;
+}
+
 int main(int argc, char** argv) {
 
     cout << "Welcome to Le Fancy Vase Drawer.\n" << endl;
@@ -34,17 +48,14 @@ int main(int argc, char** argv) {
            "p     - RAINBOW.\n"\
            "1,3   - Zoom in, zoom out\n"\
            "w,s   - Move camera up, down\n"\
-           "a,d   - Rotate camera left, right\n"\
+           "a,d   - Rotate mesh left, right\n"\
            "q,e   - Move gaze point up, down\n"\
-           "z,c   - Move camera and gaze point up, down\n"\
-           "\nPress <Enter> to begin.");
+           "z,c   - Move camera and gaze point up, down\n");
 
-    getchar();
-
-    float viewingAngle = 60.;
+    float viewingAngle = 60.; // degrees
     float aspectRatio = 1;
-    float N = 5.;
-    float F = 30.;
+    float N = 5.;  // near plane
+    float F = 30.; // far plane
     float t = N * tan(CV_PI / 360 * viewingAngle); // top
     float b = -t; // bottom
     float r = aspectRatio*t; // right
@@ -54,6 +65,8 @@ int main(int argc, char** argv) {
 
     bool camChanged = true;
     bool rainbow = true;
+    int rotationInc = 5;
+    int roll = 0;
 
     namedWindow(wndName, CV_WINDOW_AUTOSIZE);
 
@@ -81,26 +94,46 @@ int main(int argc, char** argv) {
                  0, 0, 0, 1
                  );
 
+    // container for screen coords
+    vector<Point2i> coords;
+
+    // background colour and line colour
     Scalar bgColour(255, 255, 255);
     Scalar lineColour(0);
 
+    // HSV and BGR matrices for colours of the rainbow
     int sat = 200, val = 200;
-    Mat    hsv(Size(1,1),CV_8UC3, Scalar(10,sat,val)), bgr;
+    Mat hsv(Size(1,1),CV_8UC3, Scalar(10,sat,val)), bgr;
 
+    // the polygonal mesh object
     PolygonalMesh poly;
     poly.readFromFile("PolyVase.xml");
 
-    char c = -1;
+    bool normalChanged = true;
+
+    char c = -1; // input char
     while (true) {
-        int64 t0 = getTickCount();
-
         if (camChanged) {
-            normalize(e - g, n);
-            u = p.cross(n);
-            v = u.cross(n);
-            //u = abs(u);
-            //v = abs(v);
+            if (normalChanged) {
+                // normalize vector from camera to gaze point
+                normalize(e - g, n);
+                // generate vectors describing camera plane
+                //u = (getRotationMatrix(n, rotationInc) * u.t()).t();
+                //v = (getRotationMatrix(n, rotationInc) * v.t()).t();
+                // normalize to keep window same size
+                //normalize(u, u);
+                //normalize(v, v);
+                u = p.cross(n);
+                v = u.cross(n);
+                u = (getRotationMatrix(n, roll) * u.t()).t();
+                v = (getRotationMatrix(n, roll) * v.t()).t();
+                normalize(u, u);
+                normalize(v, v);
 
+                normalChanged = false;
+            }
+
+            // construct matrix for world coords to camera viewing coords
             Mv = Mat(0, 3, CV_32FC1);
             Mv.push_back(u);
             Mv.push_back(v);
@@ -110,6 +143,7 @@ int main(int argc, char** argv) {
             Mv = Mv.t();
             Mv.push_back(Mat((Mat_<float>(1, 4) << 0, 0, 0, 1))); // works
 
+            //scale, transformation, and projection matrix
             S1T1Mp = (Mat_<float>(4, 4) <<
                           (2*N)/(r-l), 0, (r+l)/(r-l), 0,
                           0, (2*N)/(t-b), (t+b)/(t-b), 0,
@@ -117,6 +151,8 @@ int main(int argc, char** argv) {
                           0, 0, -1, 0
                           );
 
+            // scal, transform from viewing volume to canonical viewing volume.
+            // Flip along X-axis is desired
             WS2T2 = (Mat_<float>(4, 4) <<
                          w/2, 0, 0, w/2,
                          0, flip*h/2, 0, -h/2+h,
@@ -124,119 +160,151 @@ int main(int argc, char** argv) {
                          0, 0, 0, 1
                          );
 
+            // colour the background
             screen.setTo(bgColour);
 
             camChanged = false;
         }
-           
-        vector<Point2i> coords;
+        
+        coords.clear();
         coords.reserve(poly.vertsH.size());
         for (int i = 0; i < poly.vertsH.size(); i++) {
+            // Apply transformations to convert from world coordinates to screen coords
             Mat pt = WS2T2 * (S1T1Mp * (Mv * poly.vertsH[i]));
+            // Perspective divide
             pt /= pt.at<float>(3, 0);
+            // store generated coordinate in coords container
             coords.push_back(Point2f((int)pt.at<float>(0), (int)pt.at<float>(1)));
         }
-
-        //for (int i = 0; i < poly.norms.size(); i++) {
-        //    Normal nor = poly.norms[i];
-        //    Mat n4 = (Mat_<float>(4, 1) << nor.x, nor.y, nor.z, 0);
-        //    n4 = Mv * n4;
-        //    //n4 = WS2T2 * (S1T1Mp * (Mv * n4));
-        //    n4 /= n4.at<float>(3);
-        //    //cout << n4 << endl;
-        //    poly.norms[i] = Normal(n4.at<float>(0), n4.at<float>(1), n4.at<float>(2));
-        //}
-
         if (rainbow) {
             hsv = Mat(Size(1, 1), CV_8UC3, Scalar(10, sat, val));
         }
         for (int i = 0; i < poly.faces.size(); i++) {
-            Normal faceNormal = poly.norms[poly.faces[i].data[3]];
-            Mat tv = poly.vertsH[poly.faces[i].data[0]]; //  triangle 1st vertex
-            Vec3f  camToTri(tv.at<float>(0) - e.at<float>(0),
-                            tv.at<float>(1) - e.at<float>(1),
-                            tv.at<float>(2) - e.at<float>(2));
-            //cout << "fn:\n" << faceNormal << endl;
-            //cout << "tv:\n" << tv << endl;
-            //cout << "t:\n" << t << endl;
+            Face& f           = poly.faces[i];
+            Normal faceNormal = poly.norms[f.data[Face::NORM]];
+            Mat tv            = poly.vertsH[f.data[Face::PT0]]; //  triangle 1st vertex
+            // generate camera to triangle vector
+            Vec3f  camToTri(tv.at<float>(X) - e.at<float>(X),
+                            tv.at<float>(Y) - e.at<float>(Y),
+                            tv.at<float>(Z) - e.at<float>(Z));
+
+            // compute dot product to determine which faces to draw.
             float b = faceNormal.dot(camToTri); // camToTri.dot(faceNormal);
-            // faceNormal.dot(nn);
-            //cout << a << endl;
-            //cout << b << endl;
+
             if (rainbow) {
+                // increment hue value, then convert from HSV to BGR
                 Vec3b clr = hsv.at<Vec3b>(0, 0);
                 clr[0]++;
                 hsv.at<Vec3b>(0, 0) = clr;
                 cvtColor(hsv, bgr, CV_HSV2BGR);
                 Vec3b bgr3 = bgr.at<Vec3b>(0, 0);
-
                 lineColour = Scalar(bgr3[0], bgr3[1], bgr3[2]);
             }
             if (b >= 0) {
-                //lineColour = Scalar(rand.uniform(0, 255), rand.uniform(0, 255), rand.uniform(0, 255));
-
-
-                line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[1]], lineColour);
-                line(screen, coords[poly.faces[i].data[0]], coords[poly.faces[i].data[2]], lineColour);
-                line(screen, coords[poly.faces[i].data[1]], coords[poly.faces[i].data[2]], lineColour);
+                // draw triangle from 3 face coords
+                line(screen, coords[f.data[Face::PT0]], coords[f.data[Face::PT1]], lineColour);
+                line(screen, coords[f.data[Face::PT0]], coords[f.data[Face::PT2]], lineColour);
+                line(screen, coords[f.data[Face::PT1]], coords[f.data[Face::PT2]], lineColour);
             }
         }
 
+        // draw the image to the screen
         imshow(wndName, screen);
-
-        cout << (getTickCount() - t0)/cvGetTickFrequency() << endl;
 
         c = waitKey(0);
         switch (c) {
             case 'w':
-                e.at<float>(2) += 1;
+                // move camera up
+                e.at<float>(Z) += 1;
                 camChanged = true;
+                normalChanged = true;
                 break;
             case 's':
-                e.at<float>(2) -= 1;
+                // move camera down
+                e.at<float>(Z) -= 1;
                 camChanged = true;
+                normalChanged = true;
                 break;
-            case 'a':
+            case 'a':{
+                // rotate by 5 degrees along z axis
+                float a = rotationInc/180.*CV_PI;
                 e = ((Mat_<float>(3, 3) <<
-                     cos(5./180.*CV_PI), sin(5./180.*CV_PI), 0,
-                     -sin(5./180.*CV_PI), cos(5./180.*CV_PI), 0,
-                     0, 0, 1) * e.t()).t();
+                    cos(a), sin(a), 0,
+                    -sin(a), cos(a), 0,
+                    0, 0, 1) * e.t()).t();
                 camChanged = true;
+                normalChanged = true;
+            }
                 break;
-            case 'd':
+            case 'd':{
+                // rotate by -5 degrees along z axis
+                float a = -rotationInc/180.*CV_PI;
                 e = ((Mat_<float>(3, 3) <<
-                     cos(-5./180.*CV_PI), sin(-5./180.*CV_PI), 0,
-                     -sin(-5./180.*CV_PI), cos(-5./180.*CV_PI), 0,
-                     0, 0, 1) * e.t()).t();
+                    cos(a), sin(a), 0,
+                    -sin(a), cos(a), 0,
+                    0, 0, 1) * e.t()).t();
+                camChanged = true;
+                normalChanged = true;
+            }
+                break;
+            case 'y': {
+                roll += rotationInc;
+                // rotate camera
+                // rotate around unit vector 'n' -- from gaze point to cam
+                //u = (getRotationMatrix(n, rotationInc) * u.t()).t();
+                //v = (getRotationMatrix(n, rotationInc) * v.t()).t();
+                // normalize to keep window same size
+                //normalize(u, u);
+                //normalize(v, v);
+                normalChanged = true;
+                camChanged = true;
+            }
+                break;
+            case 'u':
+                roll -= rotationInc;
+                //u = (getRotationMatrix(n, -rotationInc) * u.t()).t();
+                //v = (getRotationMatrix(n, -rotationInc) * v.t()).t();
+                //normalize(u, u);
+                //normalize(v, v);
+                normalChanged = true;
                 camChanged = true;
                 break;
             case 'q':
-                g.at<float>(2) -= 1;
+                // shift gaze vector down
+                g.at<float>(Z) -= 1;
                 camChanged = true;
+                normalChanged = true;
                 break;
             case 'e':
-                g.at<float>(2) += 1;
+                // shift gaze vector up
+                g.at<float>(Z) += 1;
                 camChanged = true;
+                normalChanged = true;
                 break;
             case 'c':
-                g.at<float>(2) += 1;
-                e.at<float>(2) += 1;
+                // move camera and gaze vector up
+                g.at<float>(Z) += 1;
+                e.at<float>(Z) += 1;
                 camChanged = true;
                 break;
             case 'z':
-                g.at<float>(2) -= 1;
-                e.at<float>(2) -= 1;
+                // move camera and gaze vector down
+                g.at<float>(Z) -= 1;
+                e.at<float>(Z) -= 1;
                 camChanged = true;
                 break;
             case '1':
+                // move camera closer to object by 10%
                 e *= 0.9;
                 camChanged = true;
                 break;
             case '3':
+                // move cam further from object by 10%
                 e *= 1.1;
                 camChanged = true;
                 break;
             case 'r':
+                // colour the mesh red, green, blue, black (next 4 cases)
                 lineColour = Scalar(0, 0, 255);
                 rainbow = false;
                 break;
@@ -253,12 +321,12 @@ int main(int argc, char** argv) {
                 rainbow = false;
                 break;
             case 'p':
+                //set the rainbow flag
                 rainbow = true;
                 break;
             default:
                 break;
         }
-        
     }
 
     // chillout until the user has hit a key
