@@ -3,13 +3,46 @@ DROP DATABASE IF EXISTS vetdb;
 CREATE DATABASE vetdb;
 USE vetdb;
 SHOW TABLES;
-CREATE TABLE owner (firstname VARCHAR(20), lastname VARCHAR(20), ownerid INT NOT NULL, PRIMARY KEY (ownerid));
-CREATE TABLE pet (name VARCHAR(20), species VARCHAR(20), sex CHAR(1), birth DATE, death DATE, ownerid INT NOT NULL, FOREIGN
-KEY (ownerid) REFERENCES owner(ownerid));
+
+CREATE TABLE TA (
+    firstname VARCHAR(30) NOT NULL,
+    lastname VARCHAR(30) NOT NULL,
+    studentNumber VARCHAR(9),
+    westernID VARCHAR(8),
+    isPhD BOOLEAN,
+    picture VARCHAR(150),
+    UNIQUE(westernID),
+    PRIMARY KEY (westernID)
+    FOREIGN KEY (westernID) REFERENCES Instructors(westernID)
+);
+
+CREATE TABLE Course (
+	courseNumber VARCHAR(6),
+	courseName VARCHAR(30),
+	UNIQUE(courseNumber),
+	PRIMARY KEY (courseNumber)
+);
+
+CREATE TABLE Instructors (
+	firstName VARCHAR(30) NOT NULL,
+	lastName VARCHAR(30) NOT NULL,
+	westernID VARCHAR(8) NOT NULL,
+	UNIQUE(westernID),
+	PRIMARY KEY (westernID)
+);
+
 SHOW TABLES;
-INSERT INTO owner (firstname, lastname, ownerid) VALUES ("Laura","Reid",1);
-INSERT INTO owner (firstname, lastname, ownerid) VALUES ("Mandy", "Webster",2);
-INSERT INTO pet (name, species, sex, birth, ownerid) VALUES ("Waffles", "Dog","M","2010-09-12",1);
+INSERT INTO owner
+           (firstname, lastname, ownerid)
+    VALUES ("Laura",   "Reid",   1);
+INSERT INTO owner
+           (firstname, lastname, ownerid)
+    VALUES ("Mandy",   "Webster",2);
+INSERT INTO pet
+           (name, species, sex, birth, ownerid)
+    VALUES ("Waffles", "Dog","M","2010-09-12",1);
+
 LOAD DATA INFILE '/tmp/somedata.csv' INTO TABLE owner FIELDS TERMINATED BY ',';
+
 SELECT * from owner;
 SELECT * from pet;
