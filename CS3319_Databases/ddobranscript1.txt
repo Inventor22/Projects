@@ -41,10 +41,11 @@ CREATE TABLE CoSupervisors (
 );
 
 CREATE TABLE CourseInfo (
-	FOREIGN KEY (courseNumber) REFERENCES Courses(courseNumber),
+	courseNumber VARCHAR(6),
 	term VARCHAR(6) NOT NULL,
 	year INT NOT NULL,
 	studentsEnrolled INT NOT NULL,
+	FOREIGN KEY (courseNumber) REFERENCES Courses(courseNumber),
 	PRIMARY KEY (courseNumber, term, year)
 );
 
