@@ -10,31 +10,31 @@ VALUES ('Dustin', 'Dobransky', 'ddobran');
 SELECT * FROM Instructors;
 
 -- TAs table insertions
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Homer', 'Simpson', 250011111, 'hsimpson', 'Masters', 'lreid2');
 
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Marge', 'Simpson', 250011112,'msimpson','Masters', 'mmm');
 
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Lisa', 'Simpson',250011113,'lsimpson','PhD', 'lreid2');
 
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Maggie','Simpson',250011114,'msimpso1','PhD', 'lreid2');
 
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Ned','Flanders', 250000666,'nflanders','PhD', 'mkatchab');
 
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Todd', 'Flanders',250000667,'tflanders','Masters', 'mbauer');
 
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Monty', 'Burns',250000001,'mburns','PhD', 'dvancise');
 
-INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
 VALUES ('Waylan','Smithers',250022222,'wsmither','PhD', 'mbauer');
 
-INSERT INTO TAs (firstName, studentNumber, westernID, type, instID)
+INSERT INTO TAs (firstName, studentNumber, taID, type, instID)
 VALUES ('Dexter', 123456789, 'dexter', 'PhD', 'lreid2');
 
 SELECT * FROM TAs;
