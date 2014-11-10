@@ -4,19 +4,6 @@ CREATE DATABASE ddobrandb;
 USE ddobrandb;
 SHOW TABLES;
 
-CREATE TABLE TAs (
-    firstname VARCHAR(30) NOT NULL,
-    lastname VARCHAR(30) NOT NULL,
-    studentNumber VARCHAR(9),
-    taID VARCHAR(8),
-    type VARCHAR(7),
-    picture VARCHAR(150),
-    UNIQUE(taID),
-    PRIMARY KEY (taID),
-    FOREIGN KEY (instID)
-    	REFERENCES Instructors(instID)
-);
-
 CREATE TABLE Courses (
 	courseNumber VARCHAR(6),
 	courseName VARCHAR(30),
@@ -30,6 +17,18 @@ CREATE TABLE Instructors (
 	instID VARCHAR(8) NOT NULL,
 	UNIQUE(instID),
 	PRIMARY KEY (instID)
+);
+
+CREATE TABLE TAs (
+    firstname VARCHAR(30) NOT NULL,
+    lastname VARCHAR(30) NOT NULL,
+    studentNumber VARCHAR(9),
+    taID VARCHAR(8),
+    type VARCHAR(7),
+    picture VARCHAR(150),
+    UNIQUE(taID),
+    PRIMARY KEY (taID),
+    FOREIGN KEY (instID) REFERENCES Instructors(instID)
 );
 
 CREATE TABLE CoSupervisors (
