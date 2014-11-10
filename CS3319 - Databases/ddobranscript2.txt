@@ -1,0 +1,10 @@
+LOAD DATA INFILE 'fall2014data.txt'
+INTO TABLE Instructors 
+FIELDS TERMINATED BY ',';
+
+INSERT INTO TAs
+			(firstname, lastname, studentNumber, westernID, type, picture)
+	 VALUES ("Laura",   "Reid",   1);
+
+SELECT * from owner;
+SELECT * from pet;
