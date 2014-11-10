@@ -1,8 +1,8 @@
 USE ddobrandb;
 
--- LOAD DATA INFILE '/var/tmp/fall2014data.txt'
--- INTO TABLE Instructors 
--- FIELDS TERMINATED BY ',';
+LOAD DATA INFILE 'fall2014data.txt'
+INTO TABLE Instructors 
+FIELDS TERMINATED BY ',';
 
 INSERT INTO Instructors (firstName, lastName, instID)
 VALUES ('Dustin', 'Dobransky', 'ddobran');
