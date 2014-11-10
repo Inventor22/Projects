@@ -50,6 +50,8 @@ CREATE TABLE CourseInfo (
 );
 
 CREATE TABLE TAassignedToCourse (
+	taID VARCHAR(8),
+	courseNumber VARCHAR(6),
 	FOREIGN KEY (taID) REFERENCES TAs(taID),
 	FOREIGN KEY (courseNumber) REFERENCES CourseInfo(courseNumber),
 	PRIMARY KEY (taID, courseNumber)
