@@ -36,7 +36,7 @@ CREATE TABLE CoSupervisors (
 	instID VARCHAR(8),
 	taID VARCHAR(8),
 	FOREIGN KEY (instID) REFERENCES Instructors(instID),
-	FOREIGN KEY (taID) REFERENCES TA(taID),
+	FOREIGN KEY (taID) REFERENCES TAs(taID),
 	PRIMARY KEY (instID, taID)
 );
 
