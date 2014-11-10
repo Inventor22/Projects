@@ -7,7 +7,7 @@ USE ddobrandb;
 INSERT INTO Instructors (firstName, lastName, instID)
 VALUES ('Dustin', 'Dobransky', 'ddobran');
 
-SHOW Instructors;
+SELECT * FROM Instructors;
 
 -- TAs table insertions
 INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
@@ -37,7 +37,7 @@ VALUES ('Waylan','Smithers',250022222,'wsmither','PhD', 'mbauer');
 INSERT INTO TAs (firstName, studentNumber, westernID, type, instID)
 VALUES ('Dexter', 123456789, 'dexter', 'PhD', 'lreid2');
 
-SHOW TAs;
+SELECT * FROM TAs;
 
 INSERT INTO Courses (courseNumber, courseName)
 VALUES ('CS1026', 'Intro to Programming');
@@ -72,7 +72,7 @@ VALUES ('CS2211', 'Software Tools');
 INSERT INTO Courses (courseNumber, courseName)
 VALUES ('CS3357', 'Networks');
 
-SHOW Courses;
+SELECT * FROM Courses;
 
 -- CoSupervisors Table inserts
 
@@ -147,14 +147,14 @@ VALUES ('msimpson', 'CS1026');
 UPDATE TAs
 SET firstName='Rod'
 WHERE firstName='Todd';
-SHOW TAs;
+SELECT * FROM TAs;
 
 UPDATE TAs
 set instID = 'mperry'
 WHERE firstName = 'Waylan';
-SHOW TAs;
+SELECT * FROM TAs;
 
 UPDATE CourseInfo
 set year = 2012
 WHERE courseNumber = 'CS1026', term='Fall', year=2014;
-SHOW CourseInfo;
+SELECT * FROM CourseInfo;
