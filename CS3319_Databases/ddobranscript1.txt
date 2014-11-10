@@ -8,13 +8,13 @@ CREATE TABLE TAs (
     firstname VARCHAR(30) NOT NULL,
     lastname VARCHAR(30) NOT NULL,
     studentNumber VARCHAR(9),
-    westernID VARCHAR(8),
+    taID VARCHAR(8),
     type VARCHAR(7),
     picture VARCHAR(150),
-    UNIQUE(westernID),
-    PRIMARY KEY (westernID),
-    FOREIGN KEY (headSupervisorWesternId)
-    	REFERENCES Instructors(westernID)
+    UNIQUE(taID),
+    PRIMARY KEY (taID),
+    FOREIGN KEY (instID)
+    	REFERENCES Instructors(instID)
 );
 
 CREATE TABLE Courses (
@@ -27,17 +27,17 @@ CREATE TABLE Courses (
 CREATE TABLE Instructors (
 	firstName VARCHAR(30) NOT NULL,
 	lastName VARCHAR(30) NOT NULL,
-	westernID VARCHAR(8) NOT NULL,
-	UNIQUE(westernID),
-	PRIMARY KEY (westernID)
+	instID VARCHAR(8) NOT NULL,
+	UNIQUE(instID),
+	PRIMARY KEY (instID)
 );
 
 CREATE TABLE CoSupervisors (
-	FOREIGN KEY (instructorId)
-		REFERENCES Instructors(westernId),
-	FOREIGN KEY (taId)
-		REFERENCES TA(westernID),
-	PRIMARY KEY (instructorId, taId)
+	FOREIGN KEY (instID)
+		REFERENCES Instructors(instID),
+	FOREIGN KEY (taID)
+		REFERENCES TA(taID),
+	PRIMARY KEY (instID, taID)
 );
 
 CREATE TABLE CourseInfo (
@@ -49,9 +49,9 @@ CREATE TABLE CourseInfo (
 );
 
 CREATE TABLE TAassignedToCourse (
-	FOREIGN KEY (taId) REFERENCES TAs(westernID),
+	FOREIGN KEY (taID) REFERENCES TAs(taID),
 	FOREIGN KEY (courseNumber) REFERENCES CourseInfo(courseNumber),
-	PRIMARY KEY (taId, courseNumber)
+	PRIMARY KEY (taID, courseNumber)
 );
 
 SHOW TABLES;
