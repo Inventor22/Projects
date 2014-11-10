@@ -1,22 +1,23 @@
 SHOW databases;
-DROP DATABASE IF EXISTS vetdb;
-CREATE DATABASE vetdb;
-USE vetdb;
+DROP DATABASE IF EXISTS ddobrandb;
+CREATE DATABASE ddobrandb;
+USE ddobrandb;
 SHOW TABLES;
 
-CREATE TABLE TA (
+CREATE TABLE TAs (
     firstname VARCHAR(30) NOT NULL,
     lastname VARCHAR(30) NOT NULL,
     studentNumber VARCHAR(9),
     westernID VARCHAR(8),
-    isPhD BOOLEAN,
+    type VARCHAR(7),
     picture VARCHAR(150),
     UNIQUE(westernID),
     PRIMARY KEY (westernID)
-    FOREIGN KEY (westernID) REFERENCES Instructors(westernID)
+    FOREIGN KEY (headSupervisorWesternId)
+    	REFERENCES Instructors(westernID)
 );
 
-CREATE TABLE Course (
+CREATE TABLE Courses (
 	courseNumber VARCHAR(6),
 	courseName VARCHAR(30),
 	UNIQUE(courseNumber),
@@ -31,18 +32,26 @@ CREATE TABLE Instructors (
 	PRIMARY KEY (westernID)
 );
 
+CREATE TABLE CoSupervisors (
+	FOREIGN KEY (instructorId)
+		REFERENCES Instructors(westernId),
+	FOREIGN KEY (taId)
+		REFERENCES TA(westernID),
+	PRIMARY KEY (instructorId, taId)
+);
+
+CREATE TABLE CourseInfo (
+	FOREIGN KEY (courseNumber) REFERENCES Courses(courseNumber),
+	term VARCHAR(6),
+	year INT,
+	studentsEnrolled INT,
+	PRIMARY KEY (courseNumber, term, year)
+);
+
+CREATE TABLE TAassignedToCourse (
+	FOREIGN KEY (taId) REFERENCES TAs(westernID),
+	FOREIGN KEY (courseNumber) REFERENCES CourseInfo(courseNumber)
+	PRIMARY KEY (taId, courseNumber)
+);
+
 SHOW TABLES;
-INSERT INTO owner
-           (firstname, lastname, ownerid)
-    VALUES ("Laura",   "Reid",   1);
-INSERT INTO owner
-           (firstname, lastname, ownerid)
-    VALUES ("Mandy",   "Webster",2);
-INSERT INTO pet
-           (name, species, sex, birth, ownerid)
-    VALUES ("Waffles", "Dog","M","2010-09-12",1);
-
-LOAD DATA INFILE '/tmp/somedata.csv' INTO TABLE owner FIELDS TERMINATED BY ',';
-
-SELECT * from owner;
-SELECT * from pet;
