@@ -1,15 +1,15 @@
 USE ddobrandb;
 
---LOAD DATA INFILE '/var/tmp/fall2014data.txt'
---INTO TABLE Instructors 
---FIELDS TERMINATED BY ',';
+-- LOAD DATA INFILE '/var/tmp/fall2014data.txt'
+-- INTO TABLE Instructors 
+-- FIELDS TERMINATED BY ',';
 
 INSERT INTO Instructors (firstName, lastName, instID)
 VALUES ('Dustin', 'Dobransky', 'ddobran');
 
 SHOW Instructors;
 
---TAs table insertions
+-- TAs table insertions
 INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
 VALUES ('Homer', 'Simpson', 250011111, 'hsimpson', 'Masters', 'lreid2');
 
