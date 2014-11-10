@@ -20,8 +20,8 @@ CREATE TABLE Instructors (
 );
 
 CREATE TABLE TAs (
-    firstname VARCHAR(30) NOT NULL,
-    lastname VARCHAR(30) NOT NULL,
+    firstName VARCHAR(30) NOT NULL,
+    lastName VARCHAR(30) NOT NULL,
     studentNumber VARCHAR(9),
     taID VARCHAR(8),
     instID VARCHAR(8),
