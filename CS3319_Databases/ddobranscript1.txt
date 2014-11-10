@@ -12,7 +12,7 @@ CREATE TABLE TAs (
     type VARCHAR(7),
     picture VARCHAR(150),
     UNIQUE(westernID),
-    PRIMARY KEY (westernID)
+    PRIMARY KEY (westernID),
     FOREIGN KEY (headSupervisorWesternId)
     	REFERENCES Instructors(westernID)
 );
@@ -42,15 +42,15 @@ CREATE TABLE CoSupervisors (
 
 CREATE TABLE CourseInfo (
 	FOREIGN KEY (courseNumber) REFERENCES Courses(courseNumber),
-	term VARCHAR(6),
-	year INT,
-	studentsEnrolled INT,
+	term VARCHAR(6) NOT NULL,
+	year INT NOT NULL,
+	studentsEnrolled INT NOT NULL,
 	PRIMARY KEY (courseNumber, term, year)
 );
 
 CREATE TABLE TAassignedToCourse (
 	FOREIGN KEY (taId) REFERENCES TAs(westernID),
-	FOREIGN KEY (courseNumber) REFERENCES CourseInfo(courseNumber)
+	FOREIGN KEY (courseNumber) REFERENCES CourseInfo(courseNumber),
 	PRIMARY KEY (taId, courseNumber)
 );
 
