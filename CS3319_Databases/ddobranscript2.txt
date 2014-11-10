@@ -2,9 +2,157 @@ LOAD DATA INFILE 'fall2014data.txt'
 INTO TABLE Instructors 
 FIELDS TERMINATED BY ',';
 
-INSERT INTO TAs
-			(firstname, lastname, studentNumber, westernID, type, picture)
-	 VALUES ("Laura",   "Reid",   1);
+INSERT INTO Instructors (firstName, lastName, instID)
+VALUES ('Dustin', 'Dobransky', 'ddobran');
 
-SELECT * from owner;
-SELECT * from pet;
+SHOW Instructors;
+
+--TAs table insertions
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Homer', 'Simpson', 250011111, 'hsimpson', 'Masters', 'lreid2');
+
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Marge', 'Simpson', 250011112,'msimpson','Masters', 'mmm');
+
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Lisa', 'Simpson',250011113,'lsimpson','PhD', 'lreid2');
+
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Maggie','Simpson',250011114,'msimpso1','PhD', 'lreid2');
+
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Ned','Flanders', 250000666,'nflanders','PhD', 'mkatchab');
+
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Todd', 'Flanders',250000667,'tflanders','Masters', 'mbauer');
+
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Monty', 'Burns',250000001,'mburns','PhD', 'dvancise');
+
+INSERT INTO TAs (firstName, lastName, studentNumber, westernID, type, instID)
+VALUES ('Waylan','Smithers',250022222,'wsmither','PhD', 'mbauer');
+
+INSERT INTO TAs (firstName, studentNumber, westernID, type, instID)
+VALUES ('Dexter', 123456789, 'dexter', 'PhD', 'lreid2');
+
+SHOW TAs;
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS1026', 'Intro to Programming');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS1033', 'Multimedia and Communications');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS1032', 'Info Systems and Design');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2212', 'Intro to Software Engineering');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS3319', 'Intro to Databases');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS4411', 'Advanced Databases');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2210', 'Data Structures');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2208', 'Computer Organization');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2209', 'Logic');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2211', 'Software Tools');
+
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS3357', 'Networks');
+
+SHOW Courses;
+
+-- CoSupervisors Table inserts
+
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mdaley', 'hsimpson');
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mbauer', 'hsimpson');
+
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mdaley', 'mburns');
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('dvancise', 'mburns');
+
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mbauer', 'msimpso1');
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('sosborn', 'msimpso1');
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mperry', 'msimpso1');
+
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('lreid2', 'lsimpson');
+
+-- CourseInfo inserts
+
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1033', 'Fall', 2014);
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('tflanders', 'CS1033');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('hsimpson', 'CS1033');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('msimpson', 'CS1033');
+
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS3357', Spring, 2013);
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('tflanders', 'CS3357');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('hsimpson', 'CS3357');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('wsmither', 'CS3357');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('mburns', 'CS3357');
+
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1033', 'Fall', 2013);
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('lsimpson', 'CS1033');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('nflanders', 'CS1033');
+
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS3319', 'Fall', 2014);
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('mburns', 'CS3319');
+
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1026', 'Fall', 2014);
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('lsimpson', 'CS1026');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('msimpso1', 'CS1026');
+
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1026', 'Summer', 2014);
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('wsmither', 'CS1026');
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('msimpson', 'CS1026');
+
+UPDATE TAs
+SET firstName='Rod'
+WHERE firstName='Todd';
+SHOW TAs;
+
+UPDATE TAs
+set instID = 'mperry'
+WHERE firstName = 'Waylan';
+SHOW TAs;
+
+UPDATE CourseInfo
+set year = 2012
+WHERE courseNumber = 'CS1026', term='Fall', year=2014;
+SHOW CourseInfo;
