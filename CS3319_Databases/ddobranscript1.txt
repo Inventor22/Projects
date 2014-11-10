@@ -24,6 +24,7 @@ CREATE TABLE TAs (
     lastname VARCHAR(30) NOT NULL,
     studentNumber VARCHAR(9),
     taID VARCHAR(8),
+    instID VARCHAR(8),
     type VARCHAR(7),
     picture VARCHAR(150),
     UNIQUE(taID),
@@ -32,10 +33,10 @@ CREATE TABLE TAs (
 );
 
 CREATE TABLE CoSupervisors (
-	FOREIGN KEY (instID)
-		REFERENCES Instructors(instID),
-	FOREIGN KEY (taID)
-		REFERENCES TA(taID),
+	instID VARCHAR(8),
+	taID VARCHAR(8),
+	FOREIGN KEY (instID) REFERENCES Instructors(instID),
+	FOREIGN KEY (taID) REFERENCES TA(taID),
 	PRIMARY KEY (instID, taID)
 );
 
