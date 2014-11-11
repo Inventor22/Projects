@@ -31,14 +31,14 @@ delete from Instructors where firstName = 'Doug' and lastName = 'Vancise';
 # must delete referenced in all other tables first, then  delete from
 # root instrcutors table
 
-update TAs
-set instID = "A VALID PROF ALIAS"
+delete from CoSupervisors
 where instID in (
 	select instID from Instructors
 	where firstName='Doug' and lastName = 'Vancise'
-)
+);
 
-delete from CoSupervisors
+update TAs
+set instID = "A VALID PROF ALIAS"
 where instID in (
 	select instID from Instructors
 	where firstName='Doug' and lastName = 'Vancise'
