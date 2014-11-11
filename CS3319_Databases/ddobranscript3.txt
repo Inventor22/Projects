@@ -7,9 +7,9 @@ select lastName from Instructors;
 # supervisor with the first name "Mike"
 select t.firstName, t.lastName
 from TAs t
-inner join Instructors
-on Instructors.instID=TAs.instID
-and Instructors.firstName = 'Mike';
+inner join Instructors i
+on i.instID=t.instID
+and i.firstName = 'Mike';
 
 #List all the t.a.s firstname, lastname, type of grad  of the t.a.s
 # who are doing a PhD in order by the t.a.s first name
