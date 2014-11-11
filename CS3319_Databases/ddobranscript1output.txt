@@ -1,0 +1,99 @@
+--------------
+SHOW databases
+--------------
+
+Database
+information_schema
+abell84tadb
+ddobrandb
+mysql
+performance_schema
+vetoffice
+--------------
+DROP DATABASE IF EXISTS ddobrandb
+--------------
+
+--------------
+CREATE DATABASE ddobrandb
+--------------
+
+--------------
+SHOW TABLES
+--------------
+
+--------------
+CREATE TABLE Courses (
+	courseNumber VARCHAR(6),
+	courseName VARCHAR(30),
+	UNIQUE(courseNumber),
+	PRIMARY KEY (courseNumber)
+)
+--------------
+
+--------------
+CREATE TABLE Instructors (
+	firstName VARCHAR(30) NOT NULL,
+	lastName VARCHAR(30) NOT NULL,
+	instID VARCHAR(8) NOT NULL,
+	UNIQUE(instID),
+	PRIMARY KEY (instID)
+)
+--------------
+
+--------------
+CREATE TABLE TAs (
+    firstName VARCHAR(30) NOT NULL,
+    lastName VARCHAR(30) NOT NULL,
+    studentNumber VARCHAR(9),
+    taID VARCHAR(8),
+    instID VARCHAR(8),
+    type VARCHAR(7),
+    picture VARCHAR(150),
+    UNIQUE(taID),
+    PRIMARY KEY (taID),
+    FOREIGN KEY (instID) REFERENCES Instructors(instID)
+)
+--------------
+
+--------------
+CREATE TABLE CoSupervisors (
+	instID VARCHAR(8),
+	taID VARCHAR(8),
+	FOREIGN KEY (instID) REFERENCES Instructors(instID),
+	FOREIGN KEY (taID) REFERENCES TAs(taID),
+	PRIMARY KEY (instID, taID)
+)
+--------------
+
+--------------
+CREATE TABLE CourseInfo (
+	courseNumber VARCHAR(6),
+	term VARCHAR(6) NOT NULL,
+	year INT NOT NULL,
+	studentsEnrolled INT NOT NULL,
+	FOREIGN KEY (courseNumber) REFERENCES Courses(courseNumber),
+	PRIMARY KEY (courseNumber, term, year)
+)
+--------------
+
+--------------
+CREATE TABLE TAassignedToCourse (
+	taID VARCHAR(8),
+	courseNumber VARCHAR(6),
+	FOREIGN KEY (taID) REFERENCES TAs(taID),
+	FOREIGN KEY (courseNumber) REFERENCES CourseInfo(courseNumber),
+	PRIMARY KEY (taID, courseNumber)
+)
+--------------
+
+--------------
+SHOW TABLES
+--------------
+
+Tables_in_ddobrandb
+CoSupervisors
+CourseInfo
+Courses
+Instructors
+TAassignedToCourse
+TAs

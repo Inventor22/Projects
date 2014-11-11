@@ -1,0 +1,207 @@
+--------------
+select lastName from Instructors
+--------------
+
+lastName
+Mercer
+Ling
+Dobransky
+Vancise
+Lutfiyya
+Barron
+Reid
+Bauer
+Daley
+Katchabaw
+Moreno Maza
+Perry
+Madhavji
+Osborn
+--------------
+select t.firstName, t.lastName
+from TAs t
+inner join Instructors i
+on i.instID=t.instID
+and i.firstName = 'Mike'
+--------------
+
+firstName	lastName
+Ned	Flanders
+Rod	Flanders
+--------------
+select firstName, lastName, type from TAs
+where type='PhD'
+order by firstName
+--------------
+
+firstName	lastName	type
+Dexter		PhD
+Lisa	Simpson	PhD
+Maggie	Simpson	PhD
+Monty	Burns	PhD
+Ned	Flanders	PhD
+Waylan	Smithers	PhD
+--------------
+select * from Courses
+where courseNumber like 'CS2%'
+--------------
+
+courseNumber	courseName
+CS2208	Computer Organization
+CS2209	Logic
+CS2210	Data Structures
+CS2211	Software Tools
+CS2212	Intro to Software Engineering
+--------------
+select distinct ta.firstName, c.courseName
+from TAs ta
+join TAassignedToCourse tac
+	on ta.taID = tac.taID
+join CourseInfo ci
+	on tac.courseNumber = ci.courseNumber
+join Courses c
+	on c.courseNumber = ci.courseNumber
+where ci.term = 'Fall'
+--------------
+
+firstName	courseName
+Lisa	Intro to Programming
+Maggie	Intro to Programming
+Marge	Intro to Programming
+Waylan	Intro to Programming
+Homer	Multimedia and Communications
+Lisa	Multimedia and Communications
+Marge	Multimedia and Communications
+Ned	Multimedia and Communications
+Rod	Multimedia and Communications
+Monty	Intro to Databases
+--------------
+select t.firstName, i.firstName, i.lastName
+from TAs t, Instructors i
+where t.instID = i.instID
+--------------
+
+firstName	firstName	lastName
+Dexter	Laura	Reid
+Homer	Laura	Reid
+Lisa	Laura	Reid
+Monty	Doug	Vancise
+Maggie	Laura	Reid
+Marge	Marc	Moreno Maza
+Ned	Mike	Katchabaw
+Rod	Mike	Bauer
+Waylan	Mark	Perry
+--------------
+select Instructors.firstName, Instructors.lastName
+from Instructors
+where instID not in (
+	select distinct t.instID
+	from TAs t
+)
+--------------
+
+firstName	lastName
+Bob	Mercer
+Charles	Ling
+Dustin	Dobransky
+Hanan	Lutfiyya
+John	Barron
+Mark	Daley
+Nazim	Madhavji
+Sylvia	Osborn
+--------------
+select i.firstName, i.lastName
+from Instructors i
+where instID not in (
+	select distinct t.instID
+	from TAs t
+	union
+	select distinct cos.instID
+	from CoSupervisors cos
+)
+--------------
+
+firstName	lastName
+Bob	Mercer
+Charles	Ling
+Dustin	Dobransky
+Hanan	Lutfiyya
+John	Barron
+Nazim	Madhavji
+--------------
+select count(type) as numPhDStudents from TAs
+where type = 'PhD'
+--------------
+
+numPhDStudents
+6
+--------------
+select c.courseNumber, c.courseName, t.firstName, t.lastName
+from (
+	select *
+	from Courses
+	where courseNumber like 'CS1%'
+	) as c
+left join TAassignedToCourse tac
+	on tac.courseNumber=c.courseNumber
+left outer join TAs t
+	on t.taID=tac.taID
+--------------
+
+courseNumber	courseName	firstName	lastName
+CS1026	Intro to Programming	Lisa	Simpson
+CS1026	Intro to Programming	Maggie	Simpson
+CS1026	Intro to Programming	Marge	Simpson
+CS1026	Intro to Programming	Waylan	Smithers
+CS1032	Info Systems and Design	NULL	NULL
+CS1033	Multimedia and Communications	Homer	Simpson
+CS1033	Multimedia and Communications	Lisa	Simpson
+CS1033	Multimedia and Communications	Marge	Simpson
+CS1033	Multimedia and Communications	Ned	Flanders
+CS1033	Multimedia and Communications	Rod	Flanders
+--------------
+select a.year, count(*) as numTAs
+from (
+	select distinct year, taId
+	from TAassignedToCourse tac
+	left join CourseInfo ci
+		on ci.courseNumber = tac.courseNumber
+	) as a
+group by a.year
+--------------
+
+year	numTAs
+2013	7
+2014	8
+--------------
+select a.year
+from (
+	select distinct year, taId
+	from TAassignedToCourse tac
+	left join CourseInfo ci
+		on ci.courseNumber = tac.courseNumber
+	) as a
+group by a.year
+having count(*) < 5
+--------------
+
+--------------
+select distinct t.firstName
+	from TAs t
+	where t.instID in (
+		select instID from Instructors
+	 	where firstName = 'Doug' and lastName='Vancise')
+union
+	select tt.firstName
+		from TAs tt
+		where tt.taID in (
+			select taID from CoSupervisors
+			where instID in (
+				select instID from Instructors
+	 			where firstName = 'Doug' and lastName='Vancise'
+	 		)
+	 	)
+--------------
+
+firstName
+Monty

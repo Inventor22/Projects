@@ -1,0 +1,348 @@
+--------------
+LOAD DATA INFILE '/tmp/fall2014data.txt'
+INTO TABLE Instructors 
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+--------------
+
+--------------
+INSERT INTO Instructors (firstName, lastName, instID)
+VALUES ('Dustin', 'Dobransky', 'ddobran')
+--------------
+
+--------------
+SELECT * FROM Instructors
+--------------
+
+firstName	lastName	instID
+Bob	Mercer	bmercer
+Charles	Ling	cling
+Dustin	Dobransky	ddobran
+Doug	Vancise	dvancise
+Hanan	Lutfiyya	hlutfiyy
+John	Barron	jbarron
+Laura	Reid	lreid2
+Mike	Bauer	mbauer
+Mark	Daley	mdaley
+Mike	Katchabaw	mkatchab
+Marc	Moreno Maza	mmm
+Mark	Perry	mperry
+Nazim	Madhavji	nmadhav
+Sylvia	Osborn	sosborn
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Homer', 'Simpson', 250011111, 'hsimpson', 'Masters', 'lreid2')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Marge', 'Simpson', 250011112,'msimpson','Masters', 'mmm')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Lisa', 'Simpson',250011113,'lsimpson','PhD', 'lreid2')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Maggie','Simpson',250011114,'msimpso1','PhD', 'lreid2')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Ned','Flanders', 250000666,'nflanders','PhD', 'mkatchab')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Todd', 'Flanders',250000667,'tflanders','Masters', 'mbauer')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Monty', 'Burns',250000001,'mburns','PhD', 'dvancise')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, lastName, studentNumber, taID, type, instID)
+VALUES ('Waylan','Smithers',250022222,'wsmither','PhD', 'mbauer')
+--------------
+
+--------------
+INSERT INTO TAs (firstName, studentNumber, taID, type, instID)
+VALUES ('Dexter', 123456789, 'dexter', 'PhD', 'lreid2')
+--------------
+
+--------------
+SELECT * FROM TAs
+--------------
+
+firstName	lastName	studentNumber	taID	instID	type	picture
+Dexter		123456789	dexter	lreid2	PhD	NULL
+Homer	Simpson	250011111	hsimpson	lreid2	Masters	NULL
+Lisa	Simpson	250011113	lsimpson	lreid2	PhD	NULL
+Monty	Burns	250000001	mburns	dvancise	PhD	NULL
+Maggie	Simpson	250011114	msimpso1	lreid2	PhD	NULL
+Marge	Simpson	250011112	msimpson	mmm	Masters	NULL
+Ned	Flanders	250000666	nflander	mkatchab	PhD	NULL
+Todd	Flanders	250000667	tflander	mbauer	Masters	NULL
+Waylan	Smithers	250022222	wsmither	mbauer	PhD	NULL
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS1026', 'Intro to Programming')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS1033', 'Multimedia and Communications')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS1032', 'Info Systems and Design')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2212', 'Intro to Software Engineering')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS3319', 'Intro to Databases')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS4411', 'Advanced Databases')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2210', 'Data Structures')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2208', 'Computer Organization')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2209', 'Logic')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS2211', 'Software Tools')
+--------------
+
+--------------
+INSERT INTO Courses (courseNumber, courseName)
+VALUES ('CS3357', 'Networks')
+--------------
+
+--------------
+SELECT * FROM Courses
+--------------
+
+courseNumber	courseName
+CS1026	Intro to Programming
+CS1032	Info Systems and Design
+CS1033	Multimedia and Communications
+CS2208	Computer Organization
+CS2209	Logic
+CS2210	Data Structures
+CS2211	Software Tools
+CS2212	Intro to Software Engineering
+CS3319	Intro to Databases
+CS3357	Networks
+CS4411	Advanced Databases
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mdaley', 'hsimpson')
+--------------
+
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mbauer', 'hsimpson')
+--------------
+
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mdaley', 'mburns')
+--------------
+
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('dvancise', 'mburns')
+--------------
+
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mbauer', 'msimpso1')
+--------------
+
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('sosborn', 'msimpso1')
+--------------
+
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('mperry', 'msimpso1')
+--------------
+
+--------------
+INSERT INTO CoSupervisors (instID, taID)
+VALUES ('lreid2', 'lsimpson')
+--------------
+
+--------------
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1033', 'Fall', 2014)
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('tflanders', 'CS1033')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('hsimpson', 'CS1033')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('msimpson', 'CS1033')
+--------------
+
+--------------
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS3357', 'Spring', 2013)
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('tflanders', 'CS3357')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('hsimpson', 'CS3357')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('wsmither', 'CS3357')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('mburns', 'CS3357')
+--------------
+
+--------------
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1033', 'Fall', 2013)
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('lsimpson', 'CS1033')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('nflanders', 'CS1033')
+--------------
+
+--------------
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS3319', 'Fall', 2014)
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('mburns', 'CS3319')
+--------------
+
+--------------
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1026', 'Fall', 2014)
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('lsimpson', 'CS1026')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('msimpso1', 'CS1026')
+--------------
+
+--------------
+INSERT INTO CourseInfo (courseNumber, term, year)
+VALUES ('CS1026', 'Summer', 2014)
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('wsmither', 'CS1026')
+--------------
+
+--------------
+INSERT INTO TAassignedToCourse (taID, courseNumber)
+VALUES ('msimpson', 'CS1026')
+--------------
+
+--------------
+UPDATE TAs
+SET firstName='Rod'
+WHERE firstName='Todd'
+--------------
+
+--------------
+SELECT * FROM TAs
+--------------
+
+firstName	lastName	studentNumber	taID	instID	type	picture
+Dexter		123456789	dexter	lreid2	PhD	NULL
+Homer	Simpson	250011111	hsimpson	lreid2	Masters	NULL
+Lisa	Simpson	250011113	lsimpson	lreid2	PhD	NULL
+Monty	Burns	250000001	mburns	dvancise	PhD	NULL
+Maggie	Simpson	250011114	msimpso1	lreid2	PhD	NULL
+Marge	Simpson	250011112	msimpson	mmm	Masters	NULL
+Ned	Flanders	250000666	nflander	mkatchab	PhD	NULL
+Rod	Flanders	250000667	tflander	mbauer	Masters	NULL
+Waylan	Smithers	250022222	wsmither	mbauer	PhD	NULL
+--------------
+UPDATE TAs
+set instID = 'mperry'
+WHERE firstName = 'Waylan'
+--------------
+
+-----------ERROR 1064 (42000) at line 163: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ' term='Fall', year=2014' at line 3
+---
+SELECT * FROM TAs
+--------------
+
+firstName	lastName	studentNumber	taID	instID	type	picture
+Dexter		123456789	dexter	lreid2	PhD	NULL
+Homer	Simpson	250011111	hsimpson	lreid2	Masters	NULL
+Lisa	Simpson	250011113	lsimpson	lreid2	PhD	NULL
+Monty	Burns	250000001	mburns	dvancise	PhD	NULL
+Maggie	Simpson	250011114	msimpso1	lreid2	PhD	NULL
+Marge	Simpson	250011112	msimpson	mmm	Masters	NULL
+Ned	Flanders	250000666	nflander	mkatchab	PhD	NULL
+Rod	Flanders	250000667	tflander	mbauer	Masters	NULL
+Waylan	Smithers	250022222	wsmither	mperry	PhD	NULL
+--------------
+UPDATE CourseInfo
+set year = 2012
+WHERE courseNumber = 'CS1026', term='Fall', year=2014
+--------------
+

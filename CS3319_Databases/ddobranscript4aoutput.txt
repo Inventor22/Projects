@@ -1,0 +1,86 @@
+ERROR 1451 (23000) at line 26: Cannot delete or update a parent row: a foreign key constraint fails (`ddobrandb`.`TAs`, CONSTRAINT `TAs_ibfk_1` FOREIGN KEY (`instID`) REFERENCES `Instructors` (`instID`))
+--------------
+create view TACourses as
+	SELECT TAs.firstName,
+		   TAs.lastName,
+		   CourseInfo.courseNumber,
+		   CourseInfo.year,
+		   CourseInfo.term
+  	from TAs, CourseInfo, TAassignedToCourse
+  	where TAs.taID = TAassignedToCourse.taID
+  	and TAassignedToCourse.courseNumber = CourseInfo.courseNumber
+--------------
+
+--------------
+select * from TACourses
+--------------
+
+firstName	lastName	courseNumber	year	term
+Lisa	Simpson	CS1026	2014	Fall
+Maggie	Simpson	CS1026	2014	Fall
+Marge	Simpson	CS1026	2014	Fall
+Waylan	Smithers	CS1026	2014	Fall
+Lisa	Simpson	CS1026	2014	Summer
+Maggie	Simpson	CS1026	2014	Summer
+Marge	Simpson	CS1026	2014	Summer
+Waylan	Smithers	CS1026	2014	Summer
+Homer	Simpson	CS1033	2013	Fall
+Lisa	Simpson	CS1033	2013	Fall
+Marge	Simpson	CS1033	2013	Fall
+Ned	Flanders	CS1033	2013	Fall
+Rod	Flanders	CS1033	2013	Fall
+Homer	Simpson	CS1033	2014	Fall
+Lisa	Simpson	CS1033	2014	Fall
+Marge	Simpson	CS1033	2014	Fall
+Ned	Flanders	CS1033	2014	Fall
+Rod	Flanders	CS1033	2014	Fall
+Monty	Burns	CS3319	2014	Fall
+Homer	Simpson	CS3357	2013	Spring
+Monty	Burns	CS3357	2013	Spring
+Rod	Flanders	CS3357	2013	Spring
+Waylan	Smithers	CS3357	2013	Spring
+--------------
+select * from Instructors
+--------------
+
+firstName	lastName	instID
+Bob	Mercer	bmercer
+Charles	Ling	cling
+Dustin	Dobransky	ddobran
+Doug	Vancise	dvancise
+Hanan	Lutfiyya	hlutfiyy
+John	Barron	jbarron
+Laura	Reid	lreid2
+Mike	Bauer	mbauer
+Mark	Daley	mdaley
+Mike	Katchabaw	mkatchab
+Marc	Moreno Maza	mmm
+Mark	Perry	mperry
+Nazim	Madhavji	nmadhav
+Sylvia	Osborn	sosborn
+--------------
+delete from Instructors where firstName = 'Hanan'
+--------------
+
+--------------
+select * from Instructors
+--------------
+
+firstName	lastName	instID
+Bob	Mercer	bmercer
+Charles	Ling	cling
+Dustin	Dobransky	ddobran
+Doug	Vancise	dvancise
+John	Barron	jbarron
+Laura	Reid	lreid2
+Mike	Bauer	mbauer
+Mark	Daley	mdaley
+Mike	Katchabaw	mkatchab
+Marc	Moreno Maza	mmm
+Mark	Perry	mperry
+Nazim	Madhavji	nmadhav
+Sylvia	Osborn	sosborn
+--------------
+delete from Instructors where firstName = 'Doug' and lastName = 'Vancise'
+--------------
+
