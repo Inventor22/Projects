@@ -28,9 +28,11 @@ where courseNumber like 'CS2%';
 select ta.firstName, c.courseName
 from TAs ta
 inner join TAassignedToCourse tac
-on ta.taID = tac.taID
+	on ta.taID = tac.taID
 inner join CourseInfo ci
-on tac.courseNumber = ci.courseNumber
+	on tac.courseNumber = ci.courseNumber
+inner join Courses c
+	on c.courseNumber = ci.courseNumber
 where ci.term = 'Fall';
 
 # List the firstname of the teaching assistant and the first and last
