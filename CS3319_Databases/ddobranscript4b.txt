@@ -6,7 +6,7 @@
 
 use ddobrandb;
 
-create view TACourses as
+create or replace view TACourses as
 	SELECT TAs.firstName,
 		   TAs.lastName,
 		   CourseInfo.courseNumber,
