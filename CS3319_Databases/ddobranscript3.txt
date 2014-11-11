@@ -75,7 +75,7 @@ from (
 	from Courses
 	where courseNumber like 'CS1%'
 	) as c
-inner join TAassignedToCourse tac
+left join TAassignedToCourse tac
 	on tac.courseNumber=c.courseNumber
 left outer join TAs t
 	on t.taID=tac.taID;
