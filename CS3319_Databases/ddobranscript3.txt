@@ -44,23 +44,22 @@ where t.instID = i.instID;
 # List the first and last name of any instructors that don't head supevisor anyone
 select Instructors.firstName, Instructors.lastName
 from Instructors
-LEFT OUTER JOIN TAs
-   ON Instructors.instID = TAs.instID
-   AND Instructors.instID IS NOT NULL
-   AND TAs.instID IS NULL;
+where instID not in (
+	select distinct t.instID
+	from TAs t
+);
 
 # List the first and last name of any instructors who dont head OR
 # co supervise anyone
 select i.firstName, i.lastName
 from Instructors i
-left outer join TAs t
-	on t.instID = i.instID
-	and t.instID IS NULL
-	and i.instID IS NOT NULL
-left outer join CoSupervisors cs
-	on i.instID = cs.instID
-	and i.instID IS NOT NULL
-	and cs.instID IS NULL;
+where instID not in (
+	select distinct t.instID
+	from TAs t
+	union
+	select distinct cos.instID
+	from CoSupervisors cos
+);
 
 # Count the number of teaching assistants who are PhD student,
 # display that number
@@ -71,37 +70,53 @@ where type = 'PhD';
 # last names if they have a t.a. for any first year courses,
 # if they didnt have a t.a. just put null for these fields
 select c.courseNumber, c.courseName, t.firstName, t.lastName
-from CourseInfo ci
-left outer join TAassignedToCourse tac
-	on ci.courseNumber = tac.courseNumber
+from (
+	select courseNumber, courseName
+	from Courses
+	where courseNumber like 'CS1%'
+	) as c
+left inner join TAassignedToCourse tac
+	on tac.courseNumber=c.courseNumber
 left outer join TAs t
-	on tac.taID = t.taID
-inner join Courses c
-	on c.courseNumber = ci.courseNumber;
+	on t.taID=tac.taID;
 
 # Find the total number of teaching assistants used for each year,
 # list the year and the count for that year.
-select year, count(year) as numTAs
-from CourseInfo ci
-left join TAassignedToCourse tac
-	on ci.courseNumber = tac.courseNumber
+select a.year, count(*) as numTAs
+from (
+	select distinct year, taId
+	from CourseInfo ci
+	left join TAassignedToCourse tac
+		on ci.courseNumber = tac.courseNumber
+	) as a
 group by year;
 
 # List any year that had less than 5 teaching assistants that year,
 # you just need to list the year, not the count.
-select year
-from CourseInfo ci
-left join TAassignedToCourse tac
-	on ci.courseNumber = tac.courseNumber
+select a.year, count(*) as numTAs
+from (
+	select distinct year, taId
+	from CourseInfo ci
+	left join TAassignedToCourse tac
+		on ci.courseNumber = tac.courseNumber
+	) as a
 group by year
-where count(year) < 5;
+having count(*) < 5;
 
 # List the first name of any students that Doug Vancise either head
 # supervises or co-supervises
-select t.firstName
-from TAs t
-where instID in
-	(select * from Instructors
-	 where firstName = 'Doug' and lastName='Vancise')
+select distinct t.firstName
+	from TAs t
+	where t.instID in (
+		select instID from Instructors
+	 	where firstName = 'Doug' and lastName='Vancise')
 union
-select 
+	select tt.firstName
+		from TAs tt
+		where tt.taID in (
+			select taID from CoSupervisors
+			where instID in (
+				select instID from Instructors
+	 			where firstName = 'Doug' and lastName='Vancise'
+	 		)
+	 	);
