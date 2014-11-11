@@ -1,3 +1,8 @@
+# CS3319 - Asn 2 - Script 1
+# Dustin Dobransky
+# 250575030
+# This script creates a database and populates it with tables
+
 SHOW databases;
 DROP DATABASE IF EXISTS ddobrandb;
 CREATE DATABASE ddobrandb;
