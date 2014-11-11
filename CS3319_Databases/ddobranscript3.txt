@@ -71,7 +71,7 @@ where type = 'PhD';
 # if they didnt have a t.a. just put null for these fields
 select c.courseNumber, c.courseName, t.firstName, t.lastName
 from (
-	select courseNumber, courseName
+	select *
 	from Courses
 	where courseNumber like 'CS1%'
 	) as c
@@ -85,22 +85,22 @@ left outer join TAs t
 select a.year, count(*) as numTAs
 from (
 	select distinct year, taId
-	from CourseInfo ci
-	left join TAassignedToCourse tac
+	from TAassignedToCourse tac
+	left join CourseInfo ci
 		on ci.courseNumber = tac.courseNumber
 	) as a
-group by year;
+group by a.year;
 
 # List any year that had less than 5 teaching assistants that year,
 # you just need to list the year, not the count.
-select a.year, count(*) as numTAs
+select a.year
 from (
 	select distinct year, taId
-	from CourseInfo ci
-	left join TAassignedToCourse tac
+	from TAassignedToCourse tac
+	left join CourseInfo ci
 		on ci.courseNumber = tac.courseNumber
 	) as a
-group by year
+group by a.year
 having count(*) < 5;
 
 # List the first name of any students that Doug Vancise either head
