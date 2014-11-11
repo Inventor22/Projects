@@ -5,8 +5,8 @@ select lastName from Instructors;
 
 # Show the first and last name of all students who have a head
 # supervisor with the first name "Mike"
-select firstName, lastName
-from TAs
+select t.firstName, t.lastName
+from TAs t
 inner join Instructors
 on Instructors.instID=TAs.instID
 and Instructors.firstName = 'Mike';
