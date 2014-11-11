@@ -4,7 +4,7 @@
 # This script creates a view for the courses that TAs are involved in
 # and deletes a professor which has reliance on the TA table.
 
-use ddobranbd;
+use ddobrandb;
 
 create view TACourses as
 	SELECT t.firstName, t.lastName, c.courseNumber, c.year, c.term
