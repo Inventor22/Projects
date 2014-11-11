@@ -20,14 +20,14 @@ order by firstName;
 # List all second year courses (all fields, second year courses
 # start with CS2..)
 select * from Courses
-where courseName like 'CS2%';
+where courseNumber like 'CS2%';
 
 # List the firstname of the t.a and the name of the course they
 # were a teaching assistant for, for any t.a.s who were a
 # teaching assistant for a course given in the Fall
 select ta.firstName, c.courseName
 from TAs ta
-inner join TAassignmentToCourse tac
+inner join TAassignedToCourse tac
 on ta.taID = tac.taID
 inner join CourseInfo ci
 on tac.courseNumber = ci.courseNumber
@@ -70,7 +70,7 @@ where type = 'PhD';
 # if they didnt have a t.a. just put null for these fields
 select c.courseNumber, c.courseName, t.firstName, t.lastName
 from CourseInfo ci
-left outer join TAassignmentToCourse tac
+left outer join TAassignedToCourse tac
 	on ci.courseNumber = tac.courseNumber
 left outer join TAs t
 	on tac.taID = t.taID
@@ -81,7 +81,7 @@ inner join Courses c
 # list the year and the count for that year.
 select year, count(year) as numTAs
 from CourseInfo ci
-left join TAassignmentToCourse tac
+left join TAassignedToCourse tac
 	on ci.courseNumber = tac.courseNumber
 group by year;
 
@@ -89,7 +89,7 @@ group by year;
 # you just need to list the year, not the count.
 select year
 from CourseInfo ci
-left join TAassignmentToCourse tac
+left join TAassignedToCourse tac
 	on ci.courseNumber = tac.courseNumber
 group by year
 where count(year) < 5;
