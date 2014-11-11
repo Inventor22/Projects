@@ -27,11 +27,11 @@ where courseNumber like 'CS2%';
 # teaching assistant for a course given in the Fall
 select distinct ta.firstName, c.courseName
 from TAs ta
-left join TAassignedToCourse tac
+join TAassignedToCourse tac
 	on ta.taID = tac.taID
-left join CourseInfo ci
+join CourseInfo ci
 	on tac.courseNumber = ci.courseNumber
-left join Courses c
+join Courses c
 	on c.courseNumber = ci.courseNumber
 where ci.term = 'Fall';
 
