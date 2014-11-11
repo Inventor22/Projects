@@ -1,0 +1,105 @@
+use ddobrandb;
+
+# Show the last name of all professors
+select lastName from Instructors;
+
+# Show the first and last name of all students who have a head
+# supervisor with the first name "Mike"
+select firstName, lastName
+from TAs
+inner join Instructors
+on Instructors.instID=TAs.instID
+and Instructors.firstName = 'Mike';
+
+#List all the t.a.s firstname, lastname, type of grad  of the t.a.s
+# who are doing a PhD in order by the t.a.s first name
+select firstName, lastName, type from TAs
+where type='PhD'
+order by firstName;
+
+# List all second year courses (all fields, second year courses
+# start with CS2..)
+select * from Courses
+where courseName like 'CS2%';
+
+# List the firstname of the t.a and the name of the course they
+# were a teaching assistant for, for any t.a.s who were a
+# teaching assistant for a course given in the Fall
+select ta.firstName, c.courseName
+from TAs ta
+inner join TAassignmentToCourse tac
+on ta.taID = tac.taID
+inner join CourseInfo ci
+on tac.courseNumber = ci.courseNumber
+where ci.term = 'Fall';
+
+# List the firstname of the teaching assistant and the first and last
+# name of the teaching assistants head supervisor.
+select t.firstName, i.firstName, i.lastName
+from TAs t, Instructors i
+where t.instID = i.instID;
+
+# List the first and last name of any instructors that don't head supevisor anyone
+select Instructors.firstName, Instructors.lastName
+from Instructors
+LEFT OUTER JOIN TAs
+   ON Instructors.instID = TAs.instID
+   AND Instructors.instID IS NOT NULL
+   AND TAs.instID IS NULL;
+
+# List the first and last name of any instructors who dont head OR
+# co supervise anyone
+select i.firstName, i.lastName
+from Instructors i
+left outer join TAs t
+	on t.instID = i.instID
+	and t.instID IS NULL
+	and i.instID IS NOT NULL
+left outer join CoSupervisors cs
+	on i.instID = cs.instID
+	and i.instID IS NOT NULL
+	and cs.instID IS NULL;
+
+# Count the number of teaching assistants who are PhD student,
+# display that number
+select count(type) as numPhDStudents from TAs
+where type = 'PhD';
+
+# List the course number and course name and their t.a.s first and
+# last names if they have a t.a. for any first year courses,
+# if they didnt have a t.a. just put null for these fields
+select c.courseNumber, c.courseName, t.firstName, t.lastName
+from CourseInfo ci
+left outer join TAassignmentToCourse tac
+	on ci.courseNumber = tac.courseNumber
+left outer join TAs t
+	on tac.taID = t.taID
+inner join Courses c
+	on c.courseNumber = ci.courseNumber;
+
+# Find the total number of teaching assistants used for each year,
+# list the year and the count for that year.
+select year, count(year) as numTAs
+from CourseInfo ci
+left join TAassignmentToCourse tac
+	on ci.courseNumber = tac.courseNumber
+group by year;
+
+# List any year that had less than 5 teaching assistants that year,
+# you just need to list the year, not the count.
+select year
+from CourseInfo ci
+left join TAassignmentToCourse tac
+	on ci.courseNumber = tac.courseNumber
+group by year
+where count(year) < 5;
+
+# List the first name of any students that Doug Vancise either head
+# supervises or co-supervises
+select t.firstName
+from TAs t
+where instID in
+	(select * from Instructors
+	 where firstName = 'Doug' and lastName='Vancise')
+union
+select 
