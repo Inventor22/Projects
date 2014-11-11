@@ -26,7 +26,7 @@ select * from Instructors;
 # root instrcutors table
 
 update TAs
-set instID = "A VALID PROF ALIAS"
+set instID = "ddobran"
 where instID in (
 	select instID from Instructors
 	where firstName='Doug' and lastName = 'Vancise'
