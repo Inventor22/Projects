@@ -25,13 +25,13 @@ where courseNumber like 'CS2%';
 # List the firstname of the t.a and the name of the course they
 # were a teaching assistant for, for any t.a.s who were a
 # teaching assistant for a course given in the Fall
-select ta.firstName, c.courseName
+select distinct ta.firstName, c.courseName
 from TAs ta
-inner join TAassignedToCourse tac
+left join TAassignedToCourse tac
 	on ta.taID = tac.taID
-inner join CourseInfo ci
+left join CourseInfo ci
 	on tac.courseNumber = ci.courseNumber
-inner join Courses c
+left join Courses c
 	on c.courseNumber = ci.courseNumber
 where ci.term = 'Fall';
 
