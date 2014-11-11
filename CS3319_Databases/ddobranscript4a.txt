@@ -1,0 +1,25 @@
+# CS3319 - Asn 2 - Script 4
+# Dustin Dobransky
+# 250575030
+# This script creates a view for the courses that TAs are involved in
+# and deletes a professor which has reliance on the TA table.
+
+use ddobranbd;
+
+create view TACourses as
+	SELECT t.firstName, t.lastName, c.courseNumber, c.year, c.term
+  	from TAs, Courses, TAassignedToCourse
+  	where TAs.taID = TAassignedToCourse.taID
+  	and TAassignedToCourse.courseNumber = Courses.courseNumber;
+
+select * from TACourses;
+
+select * from Instructors;
+delete from Instructors where firstName = 'Hanan';
+select * from Instructors;
+
+# try deleting doug vancise from the database:
+delete from Instructors where firstName = 'Doug' and lastName = 'Vancise';
+
+#fails, of course, because there are depedencies
+#see script 4b for solution
