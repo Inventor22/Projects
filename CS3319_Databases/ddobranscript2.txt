@@ -109,7 +109,7 @@ INSERT INTO TAassignedToCourse (taID, courseNumber)
 VALUES ('msimpson', 'CS1033');
 
 INSERT INTO CourseInfo (courseNumber, term, year)
-VALUES ('CS3357', Spring, 2013);
+VALUES ('CS3357', 'Spring', 2013);
 INSERT INTO TAassignedToCourse (taID, courseNumber)
 VALUES ('tflanders', 'CS3357');
 INSERT INTO TAassignedToCourse (taID, courseNumber)
