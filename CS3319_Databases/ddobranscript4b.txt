@@ -7,10 +7,14 @@
 use ddobrandb;
 
 create view TACourses as
-	SELECT t.firstName, t.lastName, c.courseNumber, c.year, c.term
-  	from TAs, Courses, TAassignedToCourse
+	SELECT TAs.firstName,
+		   TAs.lastName,
+		   CourseInfo.courseNumber,
+		   CourseInfo.year,
+		   CourseInfo.term
+  	from TAs, CourseInfo, TAassignedToCourse
   	where TAs.taID = TAassignedToCourse.taID
-  	and TAassignedToCourse.courseNumber = Courses.courseNumber;
+  	and TAassignedToCourse.courseNumber = CourseInfo.courseNumber;
 
 select * from TACourses;
 
