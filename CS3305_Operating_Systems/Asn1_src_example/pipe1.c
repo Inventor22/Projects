@@ -12,7 +12,7 @@ int main(void){
   char line[80];
   int status;
  
-  if (pipe(fd) < 0){
+  if (pipe(fd) < 0){ // create pipe
     perror("pipe error");
     exit(-1);
   } 
