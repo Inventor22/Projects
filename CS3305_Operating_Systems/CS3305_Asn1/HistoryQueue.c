@@ -12,13 +12,17 @@ HistoryQueue* initHistoryQueue(int size) {
 
 void freeHistoryQueueData(HistoryQueue* q) {
     free(q->history);
+    q->count = 0;
+    q->start = 0;
+    q->end = -1;
 }
 
 char* dequeue(HistoryQueue* q) {
     if (q->count > 0) {
-        q->start = (q->start - 1) % q->size;
+        char* msg = q->history[q->start];
+        q->start = (q->start + 1) % q->size;
         q->count--;
-        return q->history[q->start];
+        return msg;
     } else {
         return NULL;
     }
@@ -26,8 +30,8 @@ char* dequeue(HistoryQueue* q) {
 
 void enqueue(HistoryQueue* q, char* msg) {
     q->end = (q->end + 1) % q->size;
-    if (q->end == q->start) {
-        q->start = q->end; // re-write over last element if queue overflows
+    if (q->end == q->start && q->count >= q->size) {
+        q->start = (q->end+1)%q->size; // re-write over last element if queue is full
     }
     if (q->count < 10) {
         q->count++;
@@ -35,10 +39,15 @@ void enqueue(HistoryQueue* q, char* msg) {
     strcpy_s(q->history[q->end], MAX_CHARS, msg); // copy msg to appropriate location in msg array
 }
 
-void printHistory(HistoryQueue* q) {
+void printHistory(HistoryQueue* q, int n) {
     int j = 1;
-    for (int i = q->start; i != q->end;) {
-        printf("Command %d: %s\n", j++, q->history[i]);
-        i = (i+1) % q->size;
+    if (n < q->count) {
+        for (int i = 0; i < n; i++) {
+            printf("Command %d: %s\n", j++, q->history[(q->end-n+i)%q->size]);
+        }
+    } else {
+        for (int i = 0; i < q->count; i++) {
+            printf("Command %d: %s\n", j++, q->history[(q->start+i)%q->size]);
+        }
     }
 }
