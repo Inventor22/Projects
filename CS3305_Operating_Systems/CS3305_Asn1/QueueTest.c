@@ -8,7 +8,7 @@ int main() {
     q = initHistoryQueue(10);
     enqueue(q, "Hello");
     enqueue(q, "World");
-    printHistory(q);
+    printHistory(q, 10);
     printf("commands: %s\n", dequeue(q));
     printf("commands: %s\n", dequeue(q));
 

@@ -9,10 +9,8 @@
 
 int make_tokenlist(char *buf, char *tokens[])
 {
-
- char input_line[MAX];
  char *line;
- int i,n;
+ int i;
 
  i = 0;
 
@@ -34,7 +32,7 @@ int make_tokenlist(char *buf, char *tokens[])
 
 */
 
-void main(void) 
+int main(void) 
 {
 
    char input_line[MAX], *tokens[CMD_MAX];
@@ -46,8 +44,10 @@ void main(void)
    else 
      printf("huh?\n");
 
+   printf("Tokens: %d\n", n);
+
    for (i = 0; i < n; i++)
      printf("extracted token is %s\n", tokens[i]);
 
-  
+  return EXIT_SUCCESS;
 }

@@ -157,3 +157,7 @@ $RECYCLE.BIN/
 *.sln
 *.vcxproj
 *.filters
+/CS3305_Operating_Systems/CS3305_Asn1/a
+/CS3305_Operating_Systems/CS3305_Asn1/b
+/CS3305_Operating_Systems/CS3305_Asn1/c
+*.o

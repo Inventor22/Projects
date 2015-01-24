@@ -8,6 +8,8 @@
 /* refresher on C syntax and queues: http://www.cs.ucf.edu/courses/cop3502/nihan/spr03/queue.pdf */
 
 #define MAX_CHARS 256
+#define CMD_MAX 10
+#define MAX_HISTORY 100
 
 typedef struct HistoryQueue {
     int size;

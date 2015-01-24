@@ -36,7 +36,8 @@ void enqueue(HistoryQueue* q, char* msg) {
     if (q->count < 10) {
         q->count++;
     }
-    strcpy_s(q->history[q->end], MAX_CHARS, msg); // copy msg to appropriate location in msg array
+    //strcpy_s(q->history[q->end], MAX_CHARS, msg); // copy msg to appropriate location in msg array
+    strcpy(q->history[q->end], msg); // copy msg to appropriate location in msg array
 }
 
 void printHistory(HistoryQueue* q, int n) {

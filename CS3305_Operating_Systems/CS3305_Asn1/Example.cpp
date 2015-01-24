@@ -19,7 +19,7 @@
            int pipefd[2];
            pid_t cpid;
            char buf;
-
+           
            if (argc != 2) {
                fprintf(stderr, "Usage: %s <string>\n", argv[0]);
                exit(EXIT_FAILURE);
