@@ -4,7 +4,7 @@
 // retrieved from: http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 // Added Stack_Size function
 
-#include "HistoryQueue.h"
+#include "StringQueue.h"
 
 #define STACK_MAX 10
 

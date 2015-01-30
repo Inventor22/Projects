@@ -20,7 +20,7 @@ int main(void) {
     dup2(fd_read, STDIN_FILENO);
     dup2(fd_write, STDOUT_FILENO);
     */
-    char* args[] = {"grep", "dustin", NULL};
+    char* args[] = {"grep", "dustin", (char*)NULL};
 
     //int input = open("file", O_RDONLY);
     //dup2(input, STDIN_FILENO);
