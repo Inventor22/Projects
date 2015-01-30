@@ -17,13 +17,14 @@
 #define R 0
 #define W 1
 
-int main(int argc, char *argv[]) {
-    int pipefd[6];
-    pid_t cpid;
-    int status;
+int main(int argc, char *argv[])
+{
+    //int pipefd[6];
+    //pid_t cpid;
+    //int status;
     char* cmd[] = {"ls", NULL};
     char* cmdd[] = {"grep", "a", NULL};
-    char* cmddd[] = {"grep", "a", NULL};
+    char* cmddd[] = {"grep", "R", NULL};
 
 
     //if (fork() == 0) {
@@ -68,22 +69,6 @@ int main(int argc, char *argv[]) {
 
     //                execvp(cmddd[0], cmddd);
     //            }
-    //        } else {
-    //            //exit(EXIT_SUCCESS);
-    //            //if (i == 0) {
-    //            //    //close(pipefd[i]);
-    //            //    close(pipefd[i+1]); // write
-    //            //    printf("parent closed write %d\n", i/2);
-    //            //} else if (i == 2) {
-    //            //    //close(pipefd[i+1]);
-    //            //    close(pipefd[i]); // read
-    //            //    printf("parent closed read %d\n", i/2);
-    //            //} else {
-    //            //    close(pipefd[i]); // read
-    //            //    close(pipefd[i-1]); // write
-    //            //    printf("parent closed write %d, read %d\n", (i/2)-1, i/2);
-    //            //}
-    //           // printf("child spawned\n");
     //        }
     //    }
     //}
@@ -95,26 +80,75 @@ int main(int argc, char *argv[]) {
     //for (int i = 0; i < 2; i++) {
     //    wait(&status);
     //}
+    int status;
 
-    for (int i = 0; i < 4; i+=2) {
-        pipe(pipefd+i);
+#define NUM_PIPES 3
 
-        if (fork() == 0) {
-            if (i == 0) {
-                close(pipefd[R]);
-                dup2(pipefd[W], STDOUT_FILENO);
-                execvp(cmd[0], cmd);
-            } else if (i == 2) {
-                close(pipefd[W]);
-                dup2(pipefd[R], STDIN_FILENO);
-                execvp(cmdd[0], cmdd);
+#define N (2*NUM_PIPES)
+
+    if (fork() == 0) {
+        int pipefd[N];
+
+        for (int i = 0; i < N/2; i++) {
+            pipe(pipefd+i*2);
+        }
+
+        for (int i = 0; i < N; i += 2) {
+            if (fork() == 0) {
+                if (i == 0) {
+                    dup2(pipefd[i+1], STDOUT_FILENO);
+
+                    for (int i = 0; i < N; i++) {
+                        close(pipefd[i]);
+                    }
+
+                    execvp(cmd[0], cmd);
+                } else if (i == N-2) {
+                    //close(pipefd[i-1]);
+                    dup2(pipefd[i-2], STDIN_FILENO);
+
+                    for (int i = 0; i < N; i++) {
+                        close(pipefd[i]);
+                    }
+
+                    execvp(cmdd[0], cmdd);
+                } else {
+                    //close(pipefd[i-1]);
+                    //close(pipefd[i]);
+                    dup2(pipefd[i-2], STDIN_FILENO);
+                    dup2(pipefd[i+1], STDOUT_FILENO);
+
+                    //close(pipefd[i-2]);
+                    //close(pipefd[i+1]);
+                    //dup2(pipefd[i], STDIN_FILENO);
+                    //dup2(pipefd[i-1], STDOUT_FILENO);
+
+                    for (int i = 0; i < N; i++) {
+                        close(pipefd[i]);
+                    }
+
+                    //close(pipefd[i-2]);
+                    //close(pipefd[i+1]);
+
+                    execvp(cmddd[0], cmddd);
+                }
             }
         }
+
+        for (int i = 0; i < N; i++) {
+            close(pipefd[i]);
+        }
+
+        for (int i = 0; i < N; i++) {
+            wait(&status);
+        }
+
+        //exit(EXIT_SUCCESS);
     }
 
-    for (int i = 0; i < 4; i++) {
-        close(pipefd[i]);
-    }
+    //for (int i = 0; i < 4; i++) {
+    //    close(pipefd[i]);
+    //}
 
     for (int i = 0; i < 2; i++) {
         wait(&status);
@@ -123,23 +157,23 @@ int main(int argc, char *argv[]) {
     /*
     if (fork() == 0) {
 
-        pipe(pipefd);
+    pipe(pipefd);
 
-        if (fork() == 0) {
-            close(pipefd[R]);
-            dup2(pipefd[W], STDOUT_FILENO);
-            execvp(cmd[0], cmd);
-        } else {
-            close(pipefd[W]);
-            dup2(pipefd[R], STDIN_FILENO);
-            execvp(cmdd[0], cmdd);
-        }
+    if (fork() == 0) {
+    close(pipefd[R]);
+    dup2(pipefd[W], STDOUT_FILENO);
+    execvp(cmd[0], cmd);
+    } else {
+    close(pipefd[W]);
+    dup2(pipefd[R], STDIN_FILENO);
+    execvp(cmdd[0], cmdd);
+    }
 
-        //close(pipefd[R]);
+    //close(pipefd[R]);
     };
 
     for (int i = 0; i < 2; i++) {
-        wait(&status);
+    wait(&status);
     }
     */
 
