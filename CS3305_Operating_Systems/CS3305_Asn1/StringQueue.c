@@ -55,11 +55,11 @@ void printStringQueue(StringQueue* q, int n) {
     int j = 1;
     if (n < q->count) {
         for (int i = 0; i < n; i++) {
-            printf("Command %d: %s\n", j++, q->history[(q->end-n+i)%q->size]);
+            printf("Command %d: %s", j++, q->history[(q->end-n+i)%q->size]);
         }
     } else {
         for (int i = 0; i < q->count; i++) {
-            printf("Command %d: %s\n", j++, q->history[(q->start+i)%q->size]);
+            printf("Command %d: %s", j++, q->history[(q->start+i)%q->size]);
         }
     }
 }

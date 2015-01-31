@@ -6,6 +6,8 @@
 #include "StringQueue.h"
 #include "StringArrQueue.h"
 #include <stdbool.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #include "Stack.h"
 
@@ -42,7 +44,7 @@ int make_tokenlist(char *buf, char *tokens[]) {
     return i;
 }
 
-char** getArgs(char** tokens, int startInd, int endInd) {
+char** extractTokens(char** tokens, int startInd, int endInd) {
     char** args = malloc(sizeof(char*) * (endInd-startInd));
     int i = 0;
     for (; i < endInd-startInd; i++) {
@@ -88,11 +90,25 @@ void queueTest() {
 
 }
 
-int main(void) {
-    //queueTest();
-    //getchar();
-    //exit(0);
+void parseExpression(char** tokens, int n, StringQueue* operator, StringArrQueue* operand) {
+    int startInd = 0, endInd = 0;
+    int i = 0;
 
+    while (i < n) {
+        if (strstr("|<>", tokens[i]) != NULL) {
+            endInd = i;
+            enqueueStringArr(operand, extractTokens(tokens, startInd, endInd));
+            enqueueString(operator, tokens[i]);
+            startInd = endInd = i+1;
+        } else {
+            endInd++;
+        }
+        i++;
+    }
+    enqueueStringArr(operand, extractTokens(tokens, startInd, endInd));
+}
+
+int main(void) {
     StringQueue* q = initStringQueue(MAX_HISTORY /*100*/);
 
     while (true) {
@@ -101,41 +117,46 @@ int main(void) {
 
         printf("Dustin> ");
         if (fgets(input_line, MAX_CHARS, stdin) != NULL) {
+            //printf("input line: %s\n", input_line);
+
+            enqueueString(q, input_line); // save command.  This can later be printed using the history command.
+            //printStringQueue(q, 10);
             n = make_tokenlist(input_line, tokens);
 
-            //printf("There are %d tokens.\n", n);
-            //for (i = 0; i < n; i++)
-            //    printf("extracted token is %s\n", tokens[i]);
-
-            //for (int i = 0; i < strlen(tokens[0]); i++) {
-            //    printf(".%c.\n", tokens[0][i]);
+            //int t = 0;
+            //while (tokens[t] != NULL) {
+            //    printf("Token %d: %s\n", t, tokens[t]);
+            //    t++;
             //}
-
-            //printf("strcmp: %d\n", strstr(tokens[0], "exit"));
-
-            printf("n: %d\n", n);
 
             if (n == 1 && strcmp(tokens[0], "exit") == 0) // exit the program
             {
                 freeStringQueueData(q); // release data from memory
-                printf("Parent Process - Program exiting\n");
+                //printf("Parent Process - Program exiting\n");
                 exit(EXIT_SUCCESS);
             } else if ((n == 1 || n == 2) && strcmp(tokens[0], "history") == 0) // print history
             {
-                printf("Printing History\n");
+                printf("History:\n");
+                int len = 10;
                 if (n > 1) {
-                    int len = atoi(tokens[1]);
-                    if (len > 0) {
-                        printStringQueue(q, len);
-                    }
-                } else {
-                    printStringQueue(q, 10);
+                    len = atoi(tokens[1]);
                 }
+                (len > 0) ? printStringQueue(q, len) : printStringQueue(q, 10);
+                //if (n > 1)
+                //{
+                //    int len = atoi(tokens[1]);
+                //    if (len > 0)
+                //    {
+                //        printStringQueue(q, len);
+                //    }
+                //}
+                //else
+                //{
+                //    printStringQueue(q, 10);
+                //}
             } else // process commands
             {
-                printf("Processing command\n");
-                enqueueString(q, input_line); // save command.  This can later be printed using the history command.
-                //printStringQueue(q, 10);
+                //printf("Processing command\n");
                 /*
                 Do not need to create any pipes for shell1, since when fork() is called,
                 all the information available to shell0 will be available to shell1 automatically.
@@ -179,265 +200,161 @@ int main(void) {
                 */
                 pid_t shell1;
 
-                if ((shell1 = fork()) == 0) { // create child process
+                int status;
+
+                if (fork() == 0) { // create child process
                     // Create two queues, one for operators ( '|' '<' '>' ), and one for
                     // operands (grep WORD, cat something)
 
                     StringQueue*    operator = initStringQueue(5);
                     StringArrQueue* operand = initStringArrQueue(5);
 
-                    printf("Shell1 Initiated\n");
-                    int startInd = 0, endInd = 0;
-                    int i = 0;
+                    //printf("Shell1 Initiated\n");
 
-                    while (i < n) {
-                        //printf("i: %d, s:%s\n", i, tokens[i]);
-                        if (strcmp(tokens[i], "|") == 0 ||
-                            strcmp(tokens[i], ">") == 0 ||
-                            strcmp(tokens[i], "<") == 0) {
-                            endInd = i;
-                            enqueueStringArr(operand, getArgs(tokens, startInd, endInd));
-                            enqueueString(operator, tokens[i]);
-                            startInd = endInd = i+1;
-                        } else {
-                            endInd++;
-                        }
-                        i++;
-                    }
-                    //printf("out of while.  s: %d, e: %d\n", startInd, endInd);
-                    enqueueStringArr(operand, getArgs(tokens, startInd, endInd));
+                    parseExpression(tokens, n, operator, operand);
 
-                    if (operand->count > 0) {
-                        printf(">>>>>>>>>>>> operands:\n");
-                        printStringArrQueue(operand);
-                    }
-                    if (operator->count > 0) {
-                        printf(">>>>>>>>>>>> operators:\n");
-                        printStringQueue(operator, 10);
-                    }
+                    //int s = 0;
+                    //while (tokens[s] != NULL) {
+                    //    printf("Token %d: %s\n", s, tokens[s]);
+                    //    s++;
+                    //}
+
+                    //if (operand->count > 0) {
+                    //    printf(">>>>>>>>>>>> operands:\n");
+                    //    printStringArrQueue(operand);
+                    //}
+                    //if (operator->count > 0) {
+                    //    printf(">>>>>>>>>>>> operators:\n");
+                    //    printStringQueue(operator, 10);
+                    //}
 
                     if (operator->count == 0) {
                         // single argument --> execute statement;
                         char** cmds = dequeueStringArr(operand);
-                        printf("Executing command: %s\n", cmds[0]);
-
+                        //printf("Executing command: %s\n", cmds[0]);
                         execvp(cmds[0], cmds);
-
-                        printf("execvp(%s, [args] FAILED.\n", cmds[0]);
+                        printf("execvp(%s, [args]) FAILED.\n", cmds[0]);
                     } else {
                         if (strcmp(topStringQueue(operator), "|") == 0) {
+#pragma region Process Pipes
+                            int numPipes = operator->count;
+                            int N = 2*numPipes;
+                            //printf("exec '|' - %d\n", numPipes);
 
-                            printf("in '|' command\n");
+                            int* pipefd = (int*)malloc(sizeof(int) * numPipes * 2);
 
+                            for (int i = 0; i < numPipes; i++) {
+                                pipe(pipefd+i*2);
+                            }
 
-                            // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                            for (int i = 0; i < N+1; i += 2) {
+                                if (fork() == 0) {
+                                    if (i == 0) {
+                                        //printf("start");
+                                        dup2(pipefd[i+1], STDOUT_FILENO);
 
-                            int status;
-                            int i = 0;
-                            pid_t pid;
+                                        for (int i = 0; i < N; i++)
+                                            close(pipefd[i]);
 
-                            int* pipefds = (int*)malloc(sizeof(int) * operator->count * 2);
-                            printf("pipes: %d\n", operator->count);
-                            printf("commands: %d\n", operand->count);
+                                        char** cmd = getStringArrElem(operand, i/2);
+                                        //char* cmd[] = {"ls", NULL};
+                                        execvp(cmd[0], cmd);
+                                    } else if (i == N) {
+                                        //printf("end");
 
-                            for (i = 0; i < (operator->count); i++) {
-                                if (pipe(pipefds + i*2) < 0) {
-                                    perror("couldn't pipe");
-                                    exit(EXIT_FAILURE);
+                                        dup2(pipefd[i-2], STDIN_FILENO);
+
+                                        for (int i = 0; i < N; i++)
+                                            close(pipefd[i]);
+
+                                        char** cmd = getStringArrElem(operand, i/2);
+                                        //char* cmd[] = {"grep", "a", NULL};
+                                        execvp(cmd[0], cmd);
+                                    } else {
+                                        dup2(pipefd[i-2], STDIN_FILENO);
+                                        dup2(pipefd[i+1], STDOUT_FILENO);
+
+                                        for (int i = 0; i < N; i++)
+                                            close(pipefd[i]);
+
+                                        char** cmd = getStringArrElem(operand, i/2);
+                                        execvp(cmd[0], cmd);
+                                    }
                                 }
                             }
 
-
-                            int j = 0;
-                            int x = 0;
-                            int ind = 0;
-                            while (x < operand->count) {
-                                pid = fork();
-                                if (pid == 0) {
-
-                                    //if not last command
-                                    if (x < operand->count-1) {
-                                        if (dup2(pipefds[j + 1], 1) < 0) {
-                                            perror("dup2");
-                                            exit(EXIT_FAILURE);
-                                        }
-                                    }
-
-                                    //if not first command&& j!= 2*numPipes
-                                    if (j != 0) {
-                                        if (dup2(pipefds[j-2], 0) < 0) {
-                                           // if (dup2(pipefds[j], 0) < 0) {
-                                            perror(" dup22");///j-2 0 j+1 1
-                                            exit(EXIT_FAILURE);
-                                        }
-                                    }
-
-
-                                    for (i = 0; i < 2*operator->count; i++) {
-                                        close(pipefds[i]);
-                                    }
-
-                                    char** cmd = getStringArrElem(operand, ind);
-
-                                    if (execvp(cmd[0], cmd) < 0) {
-                                        perror(cmd[0]);
-                                        exit(EXIT_FAILURE);
-                                    }
-                                } else if (pid < 0) {
-                                    perror("error");
-                                    exit(EXIT_FAILURE);
-                                }
-
-                                x++;
-                                ind++;
-                                j += 2;
-                            }
-                            /**Parent closes the pipes and wait for children*/
-
-                            for (i = 0; i < 2 * operand->count; i++) {
-                                close(pipefds[i]);
+                            for (int i = 0; i < N; i++) {
+                                close(pipefd[i]);
                             }
 
-                            for (i = 0; i < operand->count + 1; i++)
+                            for (int i = 0; i < N; i++) {
                                 wait(&status);
-
-                            //int fd_incoming[2];
-                            //int fd_outgoing[2];
-                            //pid_t child;
-                            //pipe(fd_outgoing);
-                            ///*
-                            //For first command:
-                            //1. create pipe to second command
-                            //2. fork.  Child -> setup , parent -> handle piping
-                            //*/
-                            //int ind = 0;
-
-                            //if ((child = fork()) == 0)
-                            //{
-                            //    char** cmd = getStringArrElem(operand, ind);
-
-                            //    printf("inside child 0.  Executing: ");
-                            //    int x = 0;
-                            //    while (cmd[x] != NULL) {
-                            //        printf(" %s", cmd[x]);
-                            //        x++;
-                            //    }
-                            //    printf(" DONE \n");
-
-                            //    dup2(fd_outgoing[WRITE], STDOUT_FILENO);
-                            //    close(fd_outgoing[WRITE]);
-                            //    close(fd_outgoing[READ]);
-
-                            //    execvp(cmd[0], cmd);
-
-                            //    printf("Command failed.");
-                            //    exit(EXIT_FAILURE);
-                            //}
-                            //else
-                            //{
-                            //    wait(NULL);
-                            //    printf("child 0 finished\n");
-                            //    fd_incoming[READ] = fd_outgoing[READ];
-                            //    fd_incoming[WRITE] = fd_outgoing[WRITE];
-                            //    ind++;
-                            //}
-
-                            //// process middle commands
-                            //for (int i = 0; i < operand->count-2; i++)
-                            //{
-                            //    pipe(fd_outgoing);
-                            //    if ((child = fork()) == 0)
-                            //    {
-                            //        printf("middle\n");
-
-                            //        dup2(fd_incoming[READ], STDIN_FILENO);
-                            //        dup2(fd_outgoing[WRITE], STDOUT_FILENO);
-                            //        close(fd_incoming[READ]);
-                            //        close(fd_incoming[WRITE]);
-                            //        close(fd_outgoing[READ]);
-                            //        close(fd_outgoing[WRITE]);
-
-                            //        char** cmd = getStringArrElem(operand, ind);
-
-                            //        execvp(cmd[0], cmd);
-
-                            //        printf("Command failed.");
-                            //        exit(EXIT_FAILURE);
-                            //    }
-                            //    else
-                            //    {
-                            //        wait(NULL);
-                            //        close(fd_incoming[READ]);
-                            //        close(fd_incoming[WRITE]);
-                            //        fd_incoming[READ] = fd_outgoing[READ];
-                            //        fd_incoming[WRITE] = fd_outgoing[WRITE];
-                            //        ind++;
-                            //    }
-                            //}
-
-                            //// process last command
-                            //if ((child = fork()) == 0) {
-                            //    char** cmd = getStringArrElem(operand, ind);
-
-                            //    printf("in final command:");
-                            //    int x = 0;
-                            //    while (cmd[x] != NULL) {
-                            //        printf(" %s", cmd[x]);
-                            //        x++;
-                            //    }
-                            //    printf("\n");
-
-                            //    dup2(fd_incoming[READ], STDIN_FILENO);
-                            //    close(fd_incoming[READ]);
-                            //    close(fd_incoming[WRITE]);
-
-                            //    execvp(cmd[0], cmd);
-
-                            //    printf("Command failed.");
-                            //    exit(EXIT_FAILURE);
-                            //} else {
-                            //    printf("last command finished\n");
-                            //    wait(NULL);
-                            //    printf("last command finished\n");
-                            //    close(fd_incoming[READ]);
-                            //    close(fd_incoming[WRITE]);
-                            //    close(fd_outgoing[READ]);
-                            //    close(fd_outgoing[WRITE]);
-                            //}
-
-                            //if (child > 0) {
-                            //    printf("Waiting on child: %d", pid(child));
-                            //    wait(NULL);
-                            //}
-
+                            }
+#pragma endregion
                         }
+                        // redirection review: http://goo.gl/BnNEvC
                         else // argument is either '<' or '>'
                         {
-                            while (operator->count > 0) {
-                                char* op = dequeueString(operator);
+#pragma region Process IO Redirection
+                            /*
+                            1. read operator
+                            2. read two commands c0, c1
+                            3. if '<', swap c0 and c1
+                            4. if '>':
+                            try open c0, if fails, dup, fork and execute
+
+                            try open c1, if fails, dup, fork and execute
+                            */
+
+                            //printf("Processing IO Redirection\n");
+
+                            int numPipes = operator->count;
+                            char** cmd;
+
+                            for (int i = 0; i < numPipes; i ++) {
+                                char*    op = dequeueString(operator);
+                                char** cmd0 = getStringArrElem(operand, i);
+                                char** cmd1 = getStringArrElem(operand, i+1);
+
                                 if (strcmp(op, "<") == 0) {
-
-                                } else {
-
+                                    int fd = open(cmd1[0], O_RDONLY);
+                                    dup2(fd, STDIN_FILENO);
+                                    close(fd);
+                                    cmd = cmd0;
+                                }
+                                if (strcmp(op, ">") == 0) {
+                                    int fd = open(cmd1[0], O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+                                    dup2(fd, STDOUT_FILENO);
+                                    close(fd);
+                                    if (i == 0) {
+                                        cmd = cmd0;
+                                    }
                                 }
                             }
+                            if (fork() == 0) {
+                                //printf("Executing: %s\n", cmd[0]);
+                                execvp(cmd[0], cmd);
+                            }
+                            wait(NULL);
+#pragma endregion
                         }
                     }
 
-                    wait(NULL);
-                    printf("Child Process finished\n");
+                    //printf("Child Process finished\n");
                     exit(EXIT_SUCCESS);
+
                 } else { // parent process
                     // wait for the child process to terminate before providing the prompt
                     // for the user again.
                     wait(NULL);
-                    printf("Shell1 finished\n");
+                    //printf("Shell1 finished\n");
 
                 }
             }
         } else {
             printf("Invalid Input\n");
         }
+        wait(NULL);
     }
 }
 
