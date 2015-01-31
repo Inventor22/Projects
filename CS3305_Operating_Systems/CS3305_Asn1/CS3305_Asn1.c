@@ -236,7 +236,6 @@ int main(void) {
                         printf("execvp(%s, [args]) FAILED.\n", cmds[0]);
                     } else {
                         if (strcmp(topStringQueue(operator), "|") == 0) {
-#pragma region Process Pipes
                             int numPipes = operator->count;
                             int N = 2*numPipes;
                             //printf("exec '|' - %d\n", numPipes);
@@ -290,12 +289,10 @@ int main(void) {
                             for (int i = 0; i < N; i++) {
                                 wait(&status);
                             }
-#pragma endregion
                         }
                         // redirection review: http://goo.gl/BnNEvC
                         else // argument is either '<' or '>'
                         {
-#pragma region Process IO Redirection
                             /*
                             1. read operator
                             2. read two commands c0, c1
@@ -336,7 +333,6 @@ int main(void) {
                                 execvp(cmd[0], cmd);
                             }
                             wait(NULL);
-#pragma endregion
                         }
                     }
 
