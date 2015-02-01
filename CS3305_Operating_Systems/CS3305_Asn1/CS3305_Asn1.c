@@ -11,6 +11,7 @@
 
 #include "Stack.h"
 
+#define MAX_ARGS_PER_CMD 12
 #define READ  0
 #define WRITE 1
 
@@ -27,21 +28,50 @@ Example using redirection and pipes:
 http://www.cs.loyola.edu/~jglenn/702/S2005/Examples/dup2.html
 */
 
-int make_tokenlist(char *buf, char *tokens[]) {
+int makeOperandsList(char *buf, char *tokens[]) {
     char *line;
-    int i;
-
-    i = 0;
+    int i = 0;
 
     line = buf;
-    tokens[i] = strtok(line, " \r\n");
+    tokens[i] = strtok(line, "<>|");
+    printf("%d: %s\n", i, tokens[i]);
     do {
         i++;
         line = NULL;
-        tokens[i] = strtok(line, " \r\n");
+        tokens[i] = strtok(line, "<>|");
+            printf("%d: %s\n", i, tokens[i]);
+
     } while (tokens[i] != NULL);
 
     return i;
+}
+char** tokenizeOperandsString(char* buf) {
+    char** tokens = malloc(sizeof(char*) * MAX_ARGS_PER_CMD);
+    char* line = buf;
+    int i = 0;
+    tokens[i] = strtok(line, " \t\r\n");
+    //printf(".%d.%s.\n", 0, tokens[0]);
+
+    do {
+        i++;
+        line = NULL;
+        tokens[i] = strtok(line, " \t\r\n");
+        //printf(".%d.%s.\n",i,tokens[i]);
+    } while (tokens[i] != NULL);
+
+    return tokens;
+}
+
+int makeOperatorsList(char* buf, char* operator) {
+    if (buf[0] == '\0') return 0;
+    int i = 0;
+    int j = 0;
+    do {
+        if (strchr("<>|", buf[i]) != NULL) {
+            operator[j++] = buf[i];
+        }
+    } while (buf[++i] != '\0');
+    return j;
 }
 
 char** extractTokens(char** tokens, int startInd, int endInd) {
@@ -112,92 +142,36 @@ int main(void) {
     StringQueue* q = initStringQueue(MAX_HISTORY /*100*/);
 
     while (true) {
-        char input_line[MAX_CHARS], *tokens[CMD_MAX];
-        int n;
+        char input_line[MAX_CHARS];
 
         printf("Dustin> ");
+
         if (fgets(input_line, MAX_CHARS, stdin) != NULL) {
-            //printf("input line: %s\n", input_line);
-
             enqueueString(q, input_line); // save command.  This can later be printed using the history command.
-            //printStringQueue(q, 10);
-            n = make_tokenlist(input_line, tokens);
 
-            //int t = 0;
-            //while (tokens[t] != NULL) {
-            //    printf("Token %d: %s\n", t, tokens[t]);
-            //    t++;
-            //}
-
-            if (n == 1 && strcmp(tokens[0], "exit") == 0) // exit the program
+            if (strstr(input_line, "exit") == input_line) // exit the program
             {
                 freeStringQueueData(q); // release data from memory
                 //printf("Parent Process - Program exiting\n");
                 exit(EXIT_SUCCESS);
-            } else if ((n == 1 || n == 2) && strcmp(tokens[0], "history") == 0) // print history
+            } else if (strstr(input_line, "history") == input_line) // print history
             {
                 printf("History:\n");
+
+                strtok(input_line, " \t\r\n");
+                char* strNum = strtok(input_line, " \t\r\n");
+
                 int len = 10;
-                if (n > 1) {
-                    len = atoi(tokens[1]);
+
+                if (strNum != NULL) {
+                    len = atoi(strNum);
                 }
+
                 (len > 0) ? printStringQueue(q, len) : printStringQueue(q, 10);
-                //if (n > 1)
-                //{
-                //    int len = atoi(tokens[1]);
-                //    if (len > 0)
-                //    {
-                //        printStringQueue(q, len);
-                //    }
-                //}
-                //else
-                //{
-                //    printStringQueue(q, 10);
-                //}
             } else // process commands
             {
                 //printf("Processing command\n");
-                /*
-                Do not need to create any pipes for shell1, since when fork() is called,
-                all the information available to shell0 will be available to shell1 automatically.
-                Once shell1 modifies the data, it no longer becomes shared between shell0 and shell1,
-                and instead shell1 gets its own copy of the data.  Changes to data in shell1 will not
-                affect data in shell0.
 
-                Example solution for one of the things.
-
-                Example solutions:
-                sort < myFile
-                1. pop operator from operator queue.
-                2. pop 2 operands from operand queue
-                3. open the file: int fd_in = open("myFile", O_READ) - use operand 2
-                4. move standard input to the file: dup2(fd_in, FD_READ);
-                5. execute sort command: execvp("sort", "sort", NULL); - use operand 1
-
-                ls > myFile
-                1. pop operator from operator queue
-                2. pop 2 operands from operand queue
-                3. Open file:
-                int fd_out = open("myFile", O_WRITE) - use operand 2
-                3. move standard output to file: dup2(fd_out, FD_WRITE);
-                4. execute ls command: execvp("ls", "ls", NULL); - use operand 1
-
-                sort < myFile > outFile
-                1. pop operator from operator queue
-                2. pop 2 operands from operand queue
-                3. encounter '<':
-                - open file from operand 2
-                - dup2 input to myFile
-                4. encounter '>':
-                - open file from remaining operand queue
-                - dup2 output to outFile
-
-                Example solutions for the other thing:
-
-                1. pop operators from operand queue
-                2. pop 2 operands from operand queue
-                3. create pipe, move output from operand 1 to pipe using dup2
-                */
                 pid_t shell1;
 
                 int status;
@@ -205,13 +179,32 @@ int main(void) {
                 if (fork() == 0) { // create child process
                     // Create two queues, one for operators ( '|' '<' '>' ), and one for
                     // operands (grep WORD, cat something)
+                    int numCmds, numOps;
+                    char operator[15];
+                    char *rawCommands[CMD_MAX];
 
-                    StringQueue*    operator = initStringQueue(5);
-                    StringArrQueue* operand = initStringArrQueue(5);
+                    numOps = makeOperatorsList(input_line, operator);
+                    numCmds = makeOperandsList(input_line, rawCommands);
+
+                    StringArrQueue* operand = initStringArrQueue(15);
+
+                    for (int i = 0; i < numCmds; i++) {
+                        char** tokOp = tokenizeOperandsString(rawCommands[i]);
+                        enqueueStringArr(operand, tokOp);
+                    }
+                    printStringArrQueue(operand);
+
+                    printf("numCmds: %d, numOps: %d\n", numCmds, numOps);
+                    //for (int i = 0; i < numCmds; i++) {
+                    //    printf("Token %d: %s\n", i, getStringArrElem(operand, i));
+                    //}
+
 
                     //printf("Shell1 Initiated\n");
 
-                    parseExpression(tokens, n, operator, operand);
+
+
+                    //parseExpression(tokens, n, operator, operand);
 
                     //int s = 0;
                     //while (tokens[s] != NULL) {
@@ -223,20 +216,20 @@ int main(void) {
                     //    printf(">>>>>>>>>>>> operands:\n");
                     //    printStringArrQueue(operand);
                     //}
-                    //if (operator->count > 0) {
+                    //if (numOps > 0) {
                     //    printf(">>>>>>>>>>>> operators:\n");
                     //    printStringQueue(operator, 10);
                     //}
 
-                    if (operator->count == 0) {
+                    if (numOps == 0) {
                         // single argument --> execute statement;
                         char** cmds = dequeueStringArr(operand);
                         //printf("Executing command: %s\n", cmds[0]);
                         execvp(cmds[0], cmds);
                         printf("execvp(%s, [args]) FAILED.\n", cmds[0]);
                     } else {
-                        if (strcmp(topStringQueue(operator), "|") == 0) {
-                            int numPipes = operator->count;
+                        if (operator[0] == '|') {
+                            int numPipes = numOps;
                             int N = 2*numPipes;
                             //printf("exec '|' - %d\n", numPipes);
 
@@ -305,21 +298,20 @@ int main(void) {
 
                             //printf("Processing IO Redirection\n");
 
-                            int numPipes = operator->count;
+                            int numPipes = numOps;
                             char** cmd;
 
-                            for (int i = 0; i < numPipes; i ++) {
-                                char*    op = dequeueString(operator);
+                            for (int i = 0; i < numPipes; i++) {
                                 char** cmd0 = getStringArrElem(operand, i);
                                 char** cmd1 = getStringArrElem(operand, i+1);
 
-                                if (strcmp(op, "<") == 0) {
+                                if (operator[i] == '<') {
                                     int fd = open(cmd1[0], O_RDONLY);
                                     dup2(fd, STDIN_FILENO);
                                     close(fd);
                                     cmd = cmd0;
                                 }
-                                if (strcmp(op, ">") == 0) {
+                                if (operator[i] == '>') {
                                     int fd = open(cmd1[0], O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
                                     dup2(fd, STDOUT_FILENO);
                                     close(fd);
