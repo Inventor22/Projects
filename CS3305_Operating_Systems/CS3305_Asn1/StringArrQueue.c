@@ -12,6 +12,11 @@ StringArrQueue* initStringArrQueue(int size) {
 
 void freeStringArrQueueData(StringArrQueue* q) {
     for (int i = 0; i < q->count; i++) {
+        int j = 0;
+        while (q->elem[i][j] != NULL) {
+            char* p = q->elem[i][j++];
+            free(p);
+        }
         free(q->elem[i]);
     }
     free(q->elem);
@@ -47,14 +52,13 @@ void enqueueStringArr(StringArrQueue* q, char** tokens) {
     if (q->count < 10) {
         q->count++;
     }
-    //strcpy_s(q->elem[q->end], MAX_CHARS, msg); // copy msg to appropriate location in msg array
     q->elem[q->end] = tokens;
 }
 
 void printStringArrQueue(StringArrQueue* q)
 {
     for (int i = 0; i < q->count; i++) {
-        printf("Command %d:", i);
+        printf("%d:", i);
         int j = 0;
         while (q->elem[i][j] != NULL) {
             printf(" %s", q->elem[(q->start+i)%q->size][j]);
