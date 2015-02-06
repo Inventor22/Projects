@@ -1,6 +1,15 @@
+/*
+File:       StringArrQueue.c
+Date:       01/02/15
+Name:       Dustin Dobransky
+Student ID: 250575030
+Alias:      ddobran
+*/
+
 #include "StringArrQueue.h"
 
-StringArrQueue* initStringArrQueue(int size) {
+StringArrQueue* initStringArrQueue(int size)
+{
     StringArrQueue* h = (StringArrQueue*)malloc(sizeof(StringArrQueue));
     h->size = size;
     h->start = 0;
@@ -10,13 +19,10 @@ StringArrQueue* initStringArrQueue(int size) {
     return h;
 }
 
-void freeStringArrQueueData(StringArrQueue* q) {
-    for (int i = 0; i < q->count; i++) {
-        int j = 0;
-        while (q->elem[i][j] != NULL) {
-            char* p = q->elem[i][j++];
-            free(p);
-        }
+void freeStringArrQueueData(StringArrQueue* q)
+{
+    for (int i = 0; i < q->count; i++)
+    {
         free(q->elem[i]);
     }
     free(q->elem);
@@ -25,31 +31,40 @@ void freeStringArrQueueData(StringArrQueue* q) {
     q->end = -1;
 }
 
-char** getStringArrElem(StringArrQueue* q, int index) {
+char** getStringArrElem(StringArrQueue* q, int index)
+{
     return q->elem[index];
 }
 
-char** topStringArrQueue(StringArrQueue* q) {
+char** topStringArrQueue(StringArrQueue* q)
+{
     return q->elem[q->start];
 }
 
-char** dequeueStringArr(StringArrQueue* q) {
-    if (q->count > 0) {
+char** dequeueStringArr(StringArrQueue* q)
+{
+    if (q->count > 0)
+    {
         char** tokens = q->elem[q->start];
         q->start = (q->start + 1) % q->size;
         q->count--;
         return tokens;
-    } else {
+    }
+    else
+    {
         return NULL;
     }
 }
 
-void enqueueStringArr(StringArrQueue* q, char** tokens) {
+void enqueueStringArr(StringArrQueue* q, char** tokens)
+{
     q->end = (q->end + 1) % q->size;
-    if (q->end == q->start && q->count >= q->size) {
+    if (q->end == q->start && q->count >= q->size)
+    {
         q->start = (q->end+1)%q->size; // re-write over last element if queue is full
     }
-    if (q->count < 10) {
+    if (q->count < 10)
+    {
         q->count++;
     }
     q->elem[q->end] = tokens;
@@ -57,10 +72,12 @@ void enqueueStringArr(StringArrQueue* q, char** tokens) {
 
 void printStringArrQueue(StringArrQueue* q)
 {
-    for (int i = 0; i < q->count; i++) {
+    for (int i = 0; i < q->count; i++)
+    {
         printf("%d:", i);
         int j = 0;
-        while (q->elem[i][j] != NULL) {
+        while (q->elem[i][j] != NULL)
+        {
             printf(" %s", q->elem[(q->start+i)%q->size][j]);
             j++;
         }

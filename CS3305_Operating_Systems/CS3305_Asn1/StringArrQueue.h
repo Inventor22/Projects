@@ -1,3 +1,15 @@
+/*
+File:       StringArrQueue.h
+Date:       01/02/15
+Name:       Dustin Dobransky
+Student ID: 250575030
+Alias:      ddobran
+
+Description:
+    Too lazy to figure out how to make a generic queue/list class in C,
+    so I wrote two implementations, and hardcoded the type.
+*/
+
 #ifndef STRINGARRQUEUE_H
 #define STRINGARRQUEUE_H
 
@@ -7,12 +19,13 @@
 
 #include "StringQueue.h"
 
-typedef struct StringArrQueue {
+typedef struct StringArrQueue
+{
     int size;
     int count;
     int start, end;
     // pointer to pointer to pointer to char;
-    // equivalently, a pointer to an array of pointers,
+    // Equivalently, a pointer to an array of pointers,
     // which point to an array of char (strings)
     char*** elem;
 } StringArrQueue;

@@ -1,3 +1,11 @@
+/*
+File:       StringQueue.c
+Date:       01/02/15
+Name:       Dustin Dobransky
+Student ID: 250575030
+Alias:      ddobran
+*/
+
 #include "StringQueue.h"
 
 StringQueue* initStringQueue(int size) {
@@ -55,7 +63,7 @@ void printStringQueue(StringQueue* q, int n) {
     int j = 1;
     if (n < q->count) {
         for (int i = 0; i < n; i++) {
-            printf("Command %d: %s", j++, q->history[(q->end-n+i)%q->size]);
+            printf("Command %d: %s", q->count-n+j++, q->history[(q->end-n+1+i)%q->size]);
         }
     } else {
         for (int i = 0; i < q->count; i++) {

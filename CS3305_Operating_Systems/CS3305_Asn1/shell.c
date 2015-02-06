@@ -12,12 +12,19 @@ Description:
     This program emulates a simple bash shell.
     Supported command types fall into two categories:
         1. Redirection: ls > file, sort < file > newFile, etc.
+           - only one of each of '<' and '>' will be present in a command
+
         2. Piping: ls -a | grep a | grep b | grep c
+           - a maximum of 3 pipes need to be supported
 
     Only one command type needs to be supported in a single statement.
 
 Notes:
-    Token code adapted from assignment resources
+    - Token code adapted from assignment resources
+    - Once I got 'middle' pipes working, i.e. for a command like: "ls -a | grep a | grep b"
+      where "grep a" would be the middle command, it was easy to extend functionality to
+      support a larger number of pipes by counting the number of operators ('<', '>', '|'),
+      and using a for loop.
 */
 
 #include <stdio.h>
@@ -25,15 +32,14 @@ Notes:
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
-#include "StringQueue.h"
-#include "StringArrQueue.h"
 #include <stdbool.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "Stack.h"
+#include "StringQueue.h"
+#include "StringArrQueue.h"
 
-#define MAX_ARGS_PER_CMD 12
+#include "ShellConstants.h"
 
 /*
 Tokenize entire command.
@@ -138,14 +144,15 @@ int main(void)
                 printf("History:\n");
 
                 strtok(input_line, " \t\r\n"); // throwaway
-                char* strNum = strtok(input_line, " \t\r\n");
+                char* strNum = strtok(NULL, " \t\r\n");
 
                 int len = 10;
 
                 if (strNum != NULL)
                     len = atoi(strNum);
 
-                (len > 0) ? printStringQueue(q, len) : printStringQueue(q, 10); // print history
+                if (len > 0) printStringQueue(q, len);
+                else         printStringQueue(q, 10); // print history
             }
             else // process commands
             {
@@ -166,6 +173,8 @@ int main(void)
                     numOps = makeOperatorsList(input_line, operator);
                     numCmds = makeOperandsList(input_line, rawCommands);
 
+                    // holds lists of operands.  Example:  "ls -la | grep a | grep b"
+                    // becomes:  operand = [["ls", "-la", NULL], ["grep", "a", NULL], ["grep", "b", NULL]]
                     StringArrQueue* operand = initStringArrQueue(15);
 
                     for (int i = 0; i < numCmds; i++)
@@ -247,7 +256,6 @@ int main(void)
                                 wait(&status);
 
                             free(pipefd); // free malloc'd pipe memory
-
                         }
                         else // argument is either '<' or '>'
                         {

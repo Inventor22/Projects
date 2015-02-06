@@ -1,3 +1,11 @@
+/*
+File:       StringQueue.h
+Date:       01/02/15
+Name:       Dustin Dobransky
+Student ID: 250575030
+Alias:      ddobran
+*/
+
 #ifndef HISTORYQUEUE_H
 #define HISTORYQUEUE_H
 
@@ -8,9 +16,6 @@
 /* refresher on C syntax and queues: http://www.cs.ucf.edu/courses/cop3502/nihan/spr03/queue.pdf */
 
 #define MAX_CHARS 256
-#define CMD_MAX 16
-// 10
-#define MAX_HISTORY 100
 
 typedef struct StringQueue {
     int size;
