@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sched.h>
-#include <math.h> 
+#include <math.h>
 
 
 int main(void)
