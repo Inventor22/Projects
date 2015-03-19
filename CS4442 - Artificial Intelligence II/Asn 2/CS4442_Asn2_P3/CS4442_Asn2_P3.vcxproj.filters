@@ -15,11 +15,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="fileRead.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="P2.cpp">
+    <ClCompile Include="P3.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fileRead.cpp">
+      <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
