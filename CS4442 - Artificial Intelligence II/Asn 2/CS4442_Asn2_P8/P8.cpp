@@ -168,10 +168,11 @@ int main(int argc, char** argv)
 
     string textTrain = argv[1];
     string textTest = argv[2];
-
-    int nGramSize = 3;
-    double delta = 0.001;
-
+    string dictionary = argv[3];
+    unsigned int nGramSize = atoi(argv[4]);
+    int threshold = atoi(argv[5]);
+    double delta = atof(argv[6]);
+    int model = atoi(argv[7]);
 
     /*
     Use word language model without reading EOS markers to read textTrain.txt and dictionary.txt.
@@ -182,6 +183,10 @@ int main(int argc, char** argv)
     unsigned int numTokensTrain = 0;
     unordered_map<vector<T>, int> trainNgrams = getNgramsForAllN(textTrain, nGramSize, false, numTokensTrain);
     unsigned int vocabularySize = numTokensTrain*2;
+
+    unsigned int numTokensDict = 0;
+    unordered_set<T> dictNGrams = generateUnigrams(dictionary, false);
+    numTokensDict = dictNGrams.size();
 
     auto testSentences = getSentences(textTest, false);
 
