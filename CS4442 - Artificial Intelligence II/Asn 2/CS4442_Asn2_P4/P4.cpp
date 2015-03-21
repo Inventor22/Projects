@@ -172,48 +172,15 @@ unordered_map<vector<T>, int> getNgramsFromVector(vector<T> tokens, unsigned int
     return database;
 }
 
-class GoodTuringParam
-{
-public:
-    GoodTuringParam() : count(0), prob(0.0) {}
-    int count;
-    double prob;
-};
-
-unordered_map<int, GoodTuringParam> frequencyOfFrequencies(unordered_map<vector<T>, int> nGrams)
-{
-    unordered_map<int, GoodTuringParam> freqs;
-    for (unordered_map<vector<T>, int>::iterator i = nGrams.begin(); i != nGrams.end(); i++) {
-        if (freqs.count(i->second)) {
-            freqs[i->second].count++;
-        } else {
-            freqs[i->second];
-            freqs[i->second].count = 1;
-        }
-    }
-}
-
 int main(int argc, char** argv)
 {
-    //argv[2] = "MarxEngelsManifest.txt";
-    //argv[1] = "testFile.txt";
-    //argv[1] = "KafkaTrial.txt";
-    //argv[2] = "2";
-    //argv[1] = "Dickens.txt";
-
-    argv[1] = "textModel.txt";
-    argv[2] = "sentences.txt";
-    argv[3] = "5";
-    argv[4] = "0.01";
-    argv[5] = "1";
-
     string textModel = argv[1];
     string sentenceFile = argv[2];
     unsigned int nGramSize = atoi(argv[3]);
     double param = atof(argv[4]);
-    bool useAddDelta = atoi(argv[5]);
+    bool useAddDelta = (bool)atoi(argv[5]);
 
-    const int threshold = param;
+    int threshold = (int)param;
     double delta = 0;
 
     if (useAddDelta) {
@@ -227,31 +194,17 @@ int main(int argc, char** argv)
 
     vector<unordered_map<vector<T>, int>> nGrams = getNgramsForAllN(textModel, nGramSize, useEosMarker, numWords);
 
-    /*unordered_map<vector<T>, int> unigramsMap = getNgrams(textModel, 1, numWords, useEosMarker);
-
-    int numUnigrams = unigramsMap.size();
-
-    vector<T> vocabulary;
-    vector<double> probV;
-    probV.reserve(vocabulary.size());
-
-    for (unordered_map<vector<T>, int>::iterator i = unigramsMap.begin(); i != unigramsMap.end(); ++i) {
-        vocabulary.push_back((i->first).at(0));
-        probV.push_back(((double)i->second)/numWords);
-    }*/
-
     int vocabularySize = 2 * nGrams[1].size(); // number of unigrams * 2
 
     vector<vector<T>> sentences = getSentences(sentenceFile, keepEosMarker);
 
-
     if (useAddDelta) {
 
-        for (int i = 0; i < sentences.size(); i++) {
+        for (unsigned int i = 0; i < sentences.size(); i++) {
             double prob = 0;
             unordered_map<vector<T>, int> sentenceNgrams = getNgramsFromVector(sentences[i], nGramSize);
             for (unordered_map<vector<T>, int>::iterator itr = sentenceNgrams.begin(); itr != sentenceNgrams.end(); itr++) {
-                for (int j = 0; j < nGramSize; j++) {
+                for (unsigned int j = 1; j < nGramSize; j++) {
                     if (nGrams[j].count(itr->first)) {
                         prob +=
                             log(
@@ -271,7 +224,7 @@ int main(int argc, char** argv)
         double totalPossibleNgrams = pow(vocabularySize, nGramSize);
 
         unordered_map<vector<T>, int> nGramBag;
-        for (int i = 0; i < nGrams.size; i++) {
+        for (unsigned int i = 0; i < nGrams.size(); i++) {
             nGramBag.insert(nGrams[i].begin(), nGrams[i].end());
             //for (unordered_map<vector<T>, int>::iterator j = nGrams[i].begin(); j != nGrams[i].end(); ++j) {
             //    GoodTuringParam g;
@@ -297,6 +250,7 @@ int main(int argc, char** argv)
         for (auto i = nGramBag.begin(); i != nGramBag.end(); i++) {
             Nr[i->second]++;
         }
+        Nr[0] = (totalPossibleNgrams - nGramBag.size());
         for (int r = 0; r <= threshold; r++) {
             if (Nr[r] == 0) {
                 cerr << "All values must be >0" << endl;
@@ -308,26 +262,25 @@ int main(int argc, char** argv)
             prob[i] = Nr[i]/numWords;
         }
 
-        double weightOfSeenNgrams = nGrams.size() / (double)totalPossibleNgrams;
+        double weightOfSeenNgrams = nGramBag.size() / (double)totalPossibleNgrams;
         double probOfSeenNgrams = 0;
         for (auto i = nGramBag.begin(); i != nGramBag.end(); i++) {
             probOfSeenNgrams += prob[i->second];
         }
 
         double normalizationFactor1 = weightOfSeenNgrams / probOfSeenNgrams;
-        for (int i = 0; i < max; i++) {
+        for (int i = 1; i < max; i++) {
             prob[i] *= normalizationFactor1;
         }
         double sum = 0;
-        for (int i = 0; i < max; i++) {
+        for (int i = 1; i < max; i++) {
             sum += prob[i];
         }
-        for (int i = 0; i < max; i++) {
+        for (int i = 1; i < max; i++) {
             prob[i] /= sum;
         }
 
-
-        for (int i = 0; i < sentences.size(); i++) {
+        for (unsigned int i = 0; i < sentences.size(); i++) {
             double sentenceProb = 0;
             unordered_map<vector<T>, int> sentenceNgrams = getNgramsFromVector(sentences[i], nGramSize);
             for (auto itr = sentenceNgrams.begin(); itr != sentenceNgrams.end(); itr++) {
@@ -335,77 +288,12 @@ int main(int argc, char** argv)
             }
             printf("%.2lf\n", prob);
         }
-
-
         // if ngram rate < threshold (r), use good-turing estimate of probability
         // if ngram rate >= threshold, use ML estimate
         // Nr = frequency of n-gram that occurs r times
     }
 
-
-
-
-
-    int firstWordIndex = drawIndex(probV);
-
-    vector<T> sentence;
-
-    sentence.push_back(vocabulary.at(firstWordIndex));
-
-    if (nGramSize == 1) {
-        while (sentence.at(sentence.size()-1).compare("<END>") != 0) {
-            int indexOfNextWord = drawIndex(probV);
-            string nextWord = vocabulary.at(indexOfNextWord);
-            sentence.push_back(nextWord);
-        }
-    } else {
-        while (true) {
-            vector<double> probs;
-            probs.reserve(vocabulary.size());
-            if (sentence.size() < nGramSize) {
-                for (unsigned int i = 0; i < vocabulary.size(); i++) {
-                    vector<T> next(sentence);
-                    next.push_back(vocabulary.at(i));
-                    if (mll.count(next) && mll.count(sentence)) {
-                        probs.push_back(((double)mll[next])/mll[sentence]);
-                    } else {
-                        probs.push_back(0);
-                    }
-                }
-            } else {
-                vector<T> lastSentence;
-                for (unsigned int j = sentence.size()-nGramSize+1; j < sentence.size(); j++) {
-                    lastSentence.push_back(sentence.at(j));
-                }
-
-                for (unsigned int i = 0; i < vocabulary.size(); i++) {
-                    vector<T> next(lastSentence);
-                    next.push_back(vocabulary.at(i));
-                    //if (mll.count(next) == 0 || mll.count(lastSentence) == 0) {
-                    //    int a = 5;
-                    //}
-                    if (mll.count(next) && mll.count(lastSentence)) {
-                        probs.push_back(((double)mll[next])/mll[lastSentence]);
-                    } else {
-                        probs.push_back(0);
-                    }
-                }
-            }
-
-            int indexOfNextWord = drawIndex(probs);
-            string nextWord = vocabulary.at(indexOfNextWord);
-            sentence.push_back(nextWord);
-
-            if (sentence.at(sentence.size()-1).compare("<END>") == 0) {
-                break;
-            }
-        }
-    }
-
-    for (unsigned int i = 0; i < sentence.size(); i++) {
-        cout << sentence[i] << " ";
-    }
-    cout << endl;
+    //getchar();
 
     return 0;
 }

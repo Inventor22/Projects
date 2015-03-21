@@ -125,9 +125,9 @@ unordered_map<vector<T>, int> getNgrams(string f0, unsigned int n, int& numWords
 
 int main(int argc, char** argv)
 {
-    //argv[1] = "2";
-    //argv[2] = "0.05";
-    //argv[3] = "50";
+    argv[1] = "2";
+    argv[2] = "0.05";
+    argv[3] = "50";
 
     unsigned int nGramSize = atoi(argv[1]);
     double delta = atof(argv[2]);
@@ -198,14 +198,14 @@ int main(int argc, char** argv)
                     for (unordered_map<vector<T>, int>::iterator itr = nGramsOfn.begin(); itr != nGramsOfn.end(); ++itr) {
                         //P_add_delta(ngram) = (count(n-gram)+delta)/(N+delta*|V|^n)
                         if (clm.at(lang).count(itr->first)) {
-                            probability[lang] += 
+                            probability[lang] +=
                                 log(
                                      (clm.at(lang)[itr->first] + delta)
                                      /
                                      (N[lang] + delta*pow(vocabularySize, nn))
                                 );
                         } else {
-                            probability[lang] += 
+                            probability[lang] +=
                                 log(
                                      (delta)
                                      /
@@ -222,7 +222,7 @@ int main(int argc, char** argv)
                     langIndex = lang;
                 }
             }
-
+            cout << bestProb << endl;
             cm[i][langIndex]++;
 
 
