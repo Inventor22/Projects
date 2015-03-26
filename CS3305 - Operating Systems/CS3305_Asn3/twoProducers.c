@@ -1,7 +1,7 @@
 /*
 Author: Dustin Dobransky
 id:     250575030
-date:   23/03/15
+date:   23/03/24
 */
 
 #include <stdio.h>
@@ -54,13 +54,16 @@ buffer b[2];
 
 /* Producer calls this to generate
    something to put in buffer
-   • Needs to determine next available slot
-   • Needs to write */
+*/
 int produceItem()
 {
     return rand()%100;
 }
 
+/*
+• Needs to determine next available slot
+• Needs to write
+*/
 void insertItem(buffer* b, int item)
 {
     b->buf[(b->in++ + 1) % b->size] = item;
@@ -72,7 +75,7 @@ void insertItem(buffer* b, int item)
 // Consumer calls to take item from buffer
 int removeItem(buffer* b)
 {
-    int item = b->buf[b->out++];
+    int item = b->buf[b->out++ % b->size];
     b->out %= b->size;
     b->count--;
     return item;
@@ -129,12 +132,14 @@ void* consumer(void* args)
         sem_getvalue(&full[0], &val[0]);
         sem_getvalue(&full[1], &val[1]);
 
-        if (val[0] > 0 || val[1] > 0) {
+        if (val[0] > 0 && val[1] > 0) {
             i = rand()&1; // if both buffers have stuff, select random one
         } else if (val[0] > 0) {
             i = 0;
         } else if (val[1] > 0) {
             i = 1;
+        } else {
+            continue;
         }
 
         sem_wait(&full[i]);
@@ -146,7 +151,7 @@ void* consumer(void* args)
         consumeItem(i);
         consumedProducts++;
     }
-    printf("done");
+    printf("done\n");
     pthread_exit(NULL);
 }
 
@@ -206,7 +211,10 @@ int main(int argc, char** argv)
     }
 
     pthread_t thread[3];
-
+    if (pthread_create(&thread[2], NULL, consumer, (void*)&b)) {
+        fprintf(stderr, "Error while creating thread\n");
+        exit(1);
+    }
     if (pthread_create(&thread[0], NULL, producer, (void*)&b[PROD_0])) {
         fprintf(stderr, "Error while creating thread\n");
         exit(1);
@@ -215,10 +223,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Error while creating thread\n");
         exit(1);
     }
-    if (pthread_create(&thread[2], NULL, consumer, (void*)&b)) {
-        fprintf(stderr, "Error while creating thread\n");
-        exit(1);
-    }
+
 
     pthread_t a;
     pthread_create(&a, NULL, f, (void*)NULL);
