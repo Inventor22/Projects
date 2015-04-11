@@ -22,7 +22,7 @@ represents the number of times that thread A and thread B execute their operatio
 #define A 0
 #define B 1
 
-sem_t sem[2];
+sem_t sem[2]; // global semaphores
 
 struct arguments
 {
@@ -33,11 +33,10 @@ void* threadA(void *argument)
 {
     struct arguments *arg = argument;
     while (arg->numRuns-- > 0) {
-        sem_wait(&sem[A]);
+        sem_wait(&sem[A]); // wait for next thread to tell this thread its ok to run
         printf("Thread A executing opA\n");
-        sem_post(&sem[B]);
+        sem_post(&sem[B]); // tell thread B it can run
     }
-    sem_destroy(&sem[A]);
     pthread_exit(NULL);
 }
 
@@ -49,7 +48,6 @@ void* threadB(void* argument)
         printf("Thread B executing opB\n");
         sem_post(&sem[A]);
     }
-    sem_destroy(&sem[B]);
     pthread_exit(NULL);
 }
 
@@ -72,13 +70,13 @@ int main(int argc, char** argv)
     }
 
     for (int i = 0; i < 2; i++) {
-        if (sem_init(&sem[i], 0, i)) {
+        if (sem_init(&sem[i], 0, i)) { // thread 1 will initialize with 1, so it will start first always
             printf(("Error creating semaphore.\n"));
             exit(EXIT_FAILURE);
         }
     }
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) { // create the threads
         if (pthread_create(&thread[i], NULL,
             threadArr[i], (void *)&arg)) {
                 fprintf(stderr, "Error while creating thread\n");
@@ -86,7 +84,7 @@ int main(int argc, char** argv)
         }
     }
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) { // join the threads
         pthread_join(thread[i], NULL);
     }
 

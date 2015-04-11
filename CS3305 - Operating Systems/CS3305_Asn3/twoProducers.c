@@ -50,7 +50,7 @@ typedef struct
 #define PROD_0 0
 #define PROD_1 1
 
-buffer b[2];
+buffer b[2]; // create two buffer objects, one for each producer
 
 /* Producer calls this to generate
    something to put in buffer
@@ -82,9 +82,9 @@ int removeItem(buffer* b)
 }
 
 // Consumer calls this to do something with item
-void consumeItem(int producer)
+void consumeItem(int producer, int item)
 {
-    printf("Consumer has consumed an item from producer %d\n", producer);
+    printf("Consumer has consumed item %d from producer %d\n", item, producer);
 }
 
 // produce items, report quantities to overall queue and personal buffer
@@ -101,19 +101,8 @@ void* producer(void* args)
 
         sem_post(&full[b->id]); // report production run to own buffer
         sem_post(&queue); // report production run to overall queue
-        int a;
-        sem_getvalue(&queue, &a);
-        printf("%d prod queue: %d\n", b->id, a);
     }
-    printf("finished producing %d\n", b->id);
-    int v[5];
-    sem_getvalue(&empty[0], &v[0]);
-    sem_getvalue(&empty[1], &v[1]);
-    sem_getvalue(&full[0], &v[2]);
-    sem_getvalue(&full[1], &v[3]);
-    sem_getvalue(&queue, &v[4]);
-    printf("empty0: %d, empty1: %d, full0: %d, full1: %d, queue: %d\n", v[0], v[1], v[2], v[3], v[4]);
-    //pthread_exit(NULL);
+    pthread_exit(NULL);
 }
 
 void* consumer(void* args)
@@ -123,9 +112,6 @@ void* consumer(void* args)
     int i = 0;
     int consumedProducts = 0;
     while (consumedProducts < totalProducts) {
-        int a;
-        sem_getvalue(&queue, &a);
-        //printf("%d\n", a);
         sem_wait(&queue); // halt until there is stuff in either buffer
 
         int val[2];
@@ -142,38 +128,16 @@ void* consumer(void* args)
             continue;
         }
 
-        sem_wait(&full[i]);
+        sem_wait(&full[i]); // subtract 1 from full buffer
 
         item = removeItem((void*)&b[i]);
 
         sem_post(&empty[i]);
 
-        consumeItem(i);
+        consumeItem(i, item);
         consumedProducts++;
     }
-    printf("done\n");
     pthread_exit(NULL);
-}
-
-void* f(void* a)
-{
-    for (int i = 0; i < 10; i++) {
-        sleep(1000);
-        int v[5];
-        sem_getvalue(&empty[0], &v[0]);
-        sem_getvalue(&empty[1], &v[1]);
-        sem_getvalue(&full[0], &v[2]);
-        sem_getvalue(&full[1], &v[3]);
-        sem_getvalue(&queue, &v[4]);
-        printf("empty0: %d, empty1: %d, full0: %d, full1: %d, queue: %d\n", v[0], v[1], v[2], v[3], v[4]);
-        /*    int numItemsToProduce;
-        int size;
-        int count, in, out;
-        int* buf;
-        int id;*/
-        printf("id: %d, size: %d, count: %d, in: %d, out: %d\n", b[0].id, b[0].size, b[0].count, b[0].in, b[0].out);
-        printf("id: %d, size: %d, count: %d, in: %d, out: %d\n", b[1].id, b[1].size, b[1].count, b[1].in, b[1].out);
-    }
 }
 
 int main(int argc, char** argv)
@@ -184,7 +148,7 @@ int main(int argc, char** argv)
     }
 
     totalProducts = 0;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) { // assign buffer initalizations
         b[i].size = atoi(argv[i*2+1]);
         b[i].numItemsToProduce = atoi(argv[i*2+2]);
         totalProducts += b[i].numItemsToProduce;
@@ -195,7 +159,7 @@ int main(int argc, char** argv)
         b[i].id = i;
     }
 
-    if (sem_init(&queue, 0, 0)) {
+    if (sem_init(&queue, 0, 0)) { // create semaphores
         printf(("Error creating semaphore.\n"));
         exit(EXIT_FAILURE);
     }
@@ -210,6 +174,7 @@ int main(int argc, char** argv)
         }
     }
 
+    // create threads
     pthread_t thread[3];
     if (pthread_create(&thread[2], NULL, consumer, (void*)&b)) {
         fprintf(stderr, "Error while creating thread\n");
@@ -224,13 +189,11 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-
-    pthread_t a;
-    pthread_create(&a, NULL, f, (void*)NULL);
-
+    // join threads
     for (int i = 0; i < 3; i++)
         pthread_join(thread[i], NULL);
 
+    // free dynamically allocated memory
     free(b[0].buf);
     free(b[1].buf);
     return EXIT_SUCCESS;

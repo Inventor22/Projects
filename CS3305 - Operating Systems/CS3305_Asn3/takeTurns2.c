@@ -1,11 +1,8 @@
-
-
 /*
 Author: Dustin Dobransky
 id:     250575030
 date:   23/03/15
 */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +18,7 @@ takeTurns1.c.
 #define A 0
 #define B 1
 
-sem_t sem[2];
+sem_t sem[2]; // two global semaphores, to help with scheduling
 
 struct arguments
 {
@@ -32,11 +29,10 @@ void* threadA(void *argument)
 {
     struct arguments *arg = argument;
     while (arg->numRuns-- > 0) {
-        sem_wait(&sem[A]);
+        sem_wait(&sem[A]); // wait until thread B is finished
         printf("Thread A executing opA\n");
-        sem_post(&sem[B]);
+        sem_post(&sem[B]); // tell thread B it can run
     }
-    sem_destroy(&sem[A]);
     pthread_exit(NULL);
 }
 
@@ -48,7 +44,6 @@ void* threadB(void* argument)
         printf("Thread B executing opB\n");
         sem_post(&sem[A]);
     }
-    sem_destroy(&sem[B]);
     pthread_exit(NULL);
 }
 

@@ -16,7 +16,7 @@ This program should be called takeTurns3.c which takes as arguments the number o
 times that the threads execute their operation and the number of threads.
 */
 
-sem_t* sem;
+sem_t* sem; // global pointer to semaphores
 
 typedef struct
 {
@@ -51,23 +51,26 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
+    // dynamically allocate threads, arguments, and semaphores
     pthread_t* thread     = (pthread_t*) malloc(sizeof(pthread_t) * numThreads);
     arguments* arg = (arguments*) malloc(sizeof(arguments) * numThreads);
     sem                   = (sem_t*) malloc(sizeof(sem_t)     * numThreads);
 
+    // assign arguments
     for (int i = 0; i < numThreads; i++) {
         arg[i].idCurrent = i;
         arg[i].idNext = i+1;
         arg[i].numRuns = numRuns;
 
+        // initialize semaphores
         if (sem_init(&sem[i], 0, i==0)) { // set first semaphore to 1, rest 0
             printf(("Error creating semaphore.\n"));
             exit(EXIT_FAILURE);
         }
     }
-    arg[numThreads-1].idNext = 0;
+    arg[numThreads-1].idNext = 0; // wrap around
 
-    for (int i = 0; i < numThreads; i++) {
+    for (int i = 0; i < numThreads; i++) { // create threads
         if (pthread_create(&thread[i], NULL,
             threadFunc, (void*) &arg[i])) {
                 fprintf(stderr, "Error while creating thread\n");
@@ -75,7 +78,7 @@ int main(int argc, char** argv)
         }
     }
 
-    for (int i = 0; i < numThreads; i++)
+    for (int i = 0; i < numThreads; i++) // join threads
         pthread_join(thread[i], NULL);
 
     free(thread); free(sem); free(arg);
