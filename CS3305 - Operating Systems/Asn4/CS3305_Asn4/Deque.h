@@ -1,7 +1,7 @@
 /*
 Name: Dustin Dobransky
 Id:   250575030
-Date: 11/14/15
+Date: 11/04/15
 
 Description:
     Header file for a Deque implemnentation.
@@ -34,7 +34,8 @@ bool   pushTop(Deque* d, int item);
 int    popTop(Deque* d);
 bool   pushBottom(Deque* d, int item);
 int    popBottom(Deque* d);
-void   removeItem(Deque* d, int item);
+bool   removeItem(Deque* d, int item);
+
 void   freeDeque(Deque* d);
 
 #endif

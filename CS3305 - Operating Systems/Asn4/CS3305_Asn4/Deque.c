@@ -1,7 +1,7 @@
 /*
 Name: Dustin Dobransky
 Id:   250575030
-Date: 11/14/15
+Date: 11/04/15
 
 Description:
     Impementation for a Deque implemnentation.
@@ -119,12 +119,12 @@ int popBottom(Deque* d)
 /*
 Remove an item from the Deque
 */
-void removeItem(Deque* d, int item)
+bool removeItem(Deque* d, int item)
 {
     Node* h = d->head; // get pointer to head and tail of Deque
     Node* t = d->tail; // iterate front to back and back to front simultaneously
     while (true) {
-        if (h->data == item) {
+        if (h->data == item) { // iterate forwards
             if (h->prev == NULL) {
                 popTop(d);
             } else {
@@ -132,8 +132,8 @@ void removeItem(Deque* d, int item)
                 n->prev->next = h->next;
                 n->next->prev = h->prev;
             }
-            return;
-        } else if (t->data == item) {
+            return true;
+        } else if (t->data == item) { // iterate backwards
             if (t->next == NULL) {
                 popBottom(d);
             } else {
@@ -141,19 +141,21 @@ void removeItem(Deque* d, int item)
                 n->prev->next = t->next;
                 n->next->prev = t->prev;
             }
-            return;
+            return true;
         }
 
         h = h->next;
 
         // if pointing to same value, i.e. meet in the middle of the Deque, return
-        if (h == t) return;
+        if (h == t) return false;
 
         t = t->prev;
 
         // if end of deque has been reached (shouldn't occur because of if(h == t)
-        if (h == NULL || t == NULL) return;
+        if (h == NULL || t == NULL) return false;
     }
+
+    return false;
 }
 
 /*

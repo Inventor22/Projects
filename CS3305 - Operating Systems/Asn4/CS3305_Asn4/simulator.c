@@ -1,3 +1,14 @@
+/*
+Name: Dustin Dobransky
+Id:   250575030
+Date: 11/04/15
+
+Description:
+    Simulator for Least Recently Used and Least Frequently Used
+    Virtual memory replacement algorithms, with Transitive Lookaside Buffer
+    optimization.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -7,20 +18,10 @@
 
 #include "Deque.h"
 
-/*
-Data Structure for:
+#define LRU 0 // Least recently used
+#define LFU 1 // Least frequently used
 
-page table
-set of frames
-TLB ->
-
-- use array for each one of these
-each entry of the array should represent info needed for the simulation
-Ex.  A page table entr shoudl consist of into for each page
-*/
-
-#define LRU 0
-#define LFU 1
+#define TLB_SIZE 10 // the Transitive lookaside buffer table size
 
 typedef struct PageInfo
 {
@@ -28,6 +29,13 @@ typedef struct PageInfo
     bool valid; // 1 == valid, 0 == invalid
     int numReferences;
 } PageInfoEntry;
+
+typedef struct TlbInfo
+{
+    int pageNum;
+    int frameNum;
+    int hitCount;
+} TlbInfoEntry;
 
 Deque* parseFile(char* fName)
 {
@@ -64,6 +72,9 @@ int main(int argc, char** argv)
     int numFaults = 0;
     int numUsedFrames = 0;
 
+    int tlbMisses = 0;
+    int tlbCount = 0;
+
     if (strcmp(opt, "LRU") == 0 || strcmp(opt, "LFU") == 0) {
         mode = strcmp(opt, "LRU") == 0 ? LRU : LFU;
     } else {
@@ -73,6 +84,14 @@ int main(int argc, char** argv)
 
     Deque* traces = parseFile(fName); // read in page table
     Deque* lru = getDeque(); // most recent on top, oldest on bottom
+
+    // initialize transitive lookaside buffer
+    TlbInfoEntry* tlb = (TlbInfoEntry*)malloc(sizeof(TlbInfoEntry) * TLB_SIZE);
+    for (int i = 0; i < TLB_SIZE; i++) {
+        tlb[i].frameNum = -1;
+        tlb[i].hitCount = 0;
+        tlb[i].pageNum = -1;
+    }
 
     // initialize page table
     PageInfoEntry* pageTable = (PageInfoEntry*) malloc(sizeof(PageInfoEntry) * pageTableSize);
@@ -85,12 +104,46 @@ int main(int argc, char** argv)
     while (traces->size > 0) {
         int pageIndex = popTop(traces); // get next trace
 
-        pageTable[pageIndex].numReferences++; // page is referenced, add to count
+        pageTable[pageIndex].numReferences++; // page is referenced, add to count (for LFU), not LRU
 
-        if (pageTable[pageIndex].valid) { // if page is valid (has frame), remove it --> (i.e. process frame),
-            if (mode == LRU) {            // and place back at bottom of Deque
-                removeItem(lru, pageIndex);
-                pushBottom(lru, pageIndex);
+        if (pageTable[pageIndex].valid) { // if page is valid, remove it
+
+            // simulate parallel TLB lookup of page #.  (Serial lookup must be done for simulation)
+            bool inTlb = false;
+            for (int i = 0; i < TLB_SIZE; i++) {
+                if (tlb[i].pageNum == pageIndex) {
+                    int frameNum = tlb[i].frameNum;
+                    /*
+                    Code that uses actual physical frame memory
+                    */
+                    tlb[i].hitCount++;
+                    inTlb = true;
+                }
+            }
+            if (!inTlb) {
+                tlbMisses++;
+                // add missed item to tlb;
+                if (tlbCount < TLB_SIZE) {
+                    tlb[tlbCount].pageNum  = pageIndex;
+                    tlb[tlbCount].frameNum = pageTable[pageIndex].frameNumber;
+                } else {
+                    // find the least recently used page #, and replace it
+                    int minHitCount = INT_MAX, minHitIndex = 0;
+                    for (int i = 0; i < TLB_SIZE; i++) {
+                        if (tlb[i].hitCount < minHitCount) {
+                            minHitCount = tlb[i].hitCount;
+                            minHitIndex = i;
+                        }
+                    }
+                    tlb[minHitIndex].pageNum = pageIndex;
+                    tlb[minHitIndex].frameNum = pageTable[pageIndex].frameNumber;
+                }
+
+                // if the page# was not found in the TLB, use page table instead
+                if (mode == LRU) {            // and place back at bottom of Deque
+                    removeItem(lru, pageIndex);
+                    pushTop(lru, pageIndex);
+                }
             }
         } else {
             numFaults++; // item not valid -> numFaults++
@@ -145,7 +198,8 @@ int main(int argc, char** argv)
     freeDeque(traces);
     free(pageTable);
 
-    printf("The number of Page Faults was: %d\n", numFaults);
+    printf("The number of Page Faults was: %d\n"
+           "The number of TLB misses was:  %d\n", numFaults, tlbMisses);
 
     //getchar();
 
